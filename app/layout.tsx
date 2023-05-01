@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-page-custom-font */
+import AuthGuard from "@/customize/components/AuthGuard";
 import { getBuildConfig } from "./config/build";
 
 const buildConfig = getBuildConfig();
@@ -33,7 +34,9 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest"></link>
         <script src="/serviceWorkerRegister.js" defer></script>
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthGuard>{children}</AuthGuard>
+      </body>
     </html>
   );
 }
