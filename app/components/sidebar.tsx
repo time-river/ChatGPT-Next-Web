@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import styles from "./home.module.scss";
 
@@ -109,6 +109,7 @@ export function SideBar(props: { className?: string }) {
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
   const navigate = useNavigate();
   const config = useAppConfig();
+  const [settingStatus, setSettingStatus] = useState(true);
 
   useHotKey();
 
@@ -168,8 +169,13 @@ export function SideBar(props: { className?: string }) {
               }}
             />
           </div>
-          <div className={styles["sidebar-action"]}>
-            <Link to={Path.Settings}>
+          <div
+            className={styles["sidebar-action"]}
+            onClick={() => {
+              setSettingStatus(!settingStatus);
+            }}
+          >
+            <Link to={settingStatus ? Path.Settings : Path.Home}>
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
           </div>

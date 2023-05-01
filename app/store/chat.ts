@@ -520,7 +520,7 @@ export const useChatStore = create<ChatStore>()(
       },
 
       clearAllData() {
-        localStorage.clear();
+        localStorage.removeItem(StoreKey.Chat);
         location.reload();
       },
     }),
