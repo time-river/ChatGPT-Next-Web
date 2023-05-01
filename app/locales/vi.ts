@@ -1,4 +1,4 @@
-import { SubmitKey } from "../store/config";
+import { SubmitKey } from "@/customize/store/config";
 import type { LocaleType } from "./index";
 
 const vi: LocaleType = {
