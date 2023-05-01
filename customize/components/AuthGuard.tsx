@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from 'react';
+import { userStore } from '../user/store';
 
 const whitePaths = new Set([
   "/signin",
@@ -9,13 +10,10 @@ const whitePaths = new Set([
 ])
 
 class AuthGuard extends React.Component<any> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false, error: null, info: null };
-  }
-
   isLogin(): boolean {
-    return false
+    const { getState } = userStore
+
+    return getState().isSignIn()
   }
 
   render() {
