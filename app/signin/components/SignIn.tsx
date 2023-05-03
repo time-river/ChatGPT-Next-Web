@@ -27,6 +27,9 @@ import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
+import { fetchSignIn } from "@/customize/api/user";
+import { Response, SignInReq, SignInRsp } from "@/customize/api/types";
+import { userStore } from "@/customize/user/store";
 
 const theme = createTheme();
 const captchaRef = React.createRef<ReCAPTCHA>();
@@ -39,6 +42,8 @@ export default function SignIn() {
   const [tipStatus, setTipStatus] = React.useState(false);
   const [tipText, setTipText] = React.useState<string | null>("");
   const [tipType, setTipType] = React.useState<AlertColor>("success");
+  const [username, setUsername] = React.useState<string>("");
+  const [passwd, setPasswd] = React.useState<string>("");
 
   const SITE_KEY = globalCfg.recaptchaKey;
   const TIPES_TIME = 5000;
@@ -55,19 +60,56 @@ export default function SignIn() {
   };
 
   const requestSignIn = (value: string | null) => {
-    setLogined(true);
-    console.log(value);
-
-    setTimeout(() => {
-      setTipType("success");
-      setTipText(t("SignInOk"));
+    if (value == null) {
+      setTipType("error");
+      setTipText(t("UnknowError"));
       setOpen(false);
       setTipStatus(true);
+      return;
+    }
 
-      // simulate a mouse click
-      // force refresh page to avoid broken css style
-      window.location.href = "/";
-    }, 1000);
+    setLogined(true);
+
+    const data: SignInReq = {
+      username: username,
+      password: passwd,
+      code: value,
+    };
+
+    fetchSignIn(
+      data,
+      (response: Response<SignInRsp>) => {
+        if (!response.data) {
+          new Error(t("ServerError"));
+        }
+
+        const data: SignInRsp = response.data as SignInRsp;
+        const { getState } = userStore;
+
+        getState().signIn({ ...data });
+        setTipType("success");
+        setTipText(response.message);
+
+        setTimeout(() => {
+          setOpen(false);
+          setTipStatus(true);
+
+          // simulate a mouse click
+          // force refresh page to avoid broken css style
+          window.location.href = "/";
+        }, 1000);
+      },
+      (error: any) => {
+        setTipType("error");
+        setTipText(error.toString());
+
+        setTimeout(() => {
+          setOpen(false);
+          setTipStatus(true);
+          setLogined(false);
+        }, 1000);
+      },
+    );
   };
 
   // speed up home page loading
@@ -78,16 +120,23 @@ export default function SignIn() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const data = new FormData(event.currentTarget);
-    const username = data.get("username");
-    const passwd = data.get("password");
+    const rawData = new FormData(event.currentTarget);
+    const username = rawData.get("username");
+    const passwd = rawData.get("password");
 
-    if (username === "" || passwd === "") {
+    if (
+      username == null ||
+      passwd == null ||
+      username === "" ||
+      passwd === ""
+    ) {
       return;
     }
 
-    console.log("1234");
-    //captchaRef.current?.reset();
+    setUsername(username as string);
+    setPasswd(passwd as string);
+
+    captchaRef.current?.reset();
     setOpen(true);
   };
 

@@ -5,12 +5,14 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { SubmitHandle, SubmitProps } from "./types";
+import { SubmitHandle, PasswdProps } from "./types";
 
 import { t } from "@/customize/helper";
 import globalConfig from "@/global.config";
+import { ResetReq, ResetRsp, Response } from "@/customize/api/types";
+import { fetchReset } from "@/customize/api/user";
 
-const PasswdForm = (props: SubmitProps, ref: React.Ref<SubmitHandle>) => {
+const PasswdForm = (props: PasswdProps, ref: React.Ref<SubmitHandle>) => {
   const [passwdFocus, setPasswdFocus] = React.useState(false);
   const [rePasswdFocus, setRePasswdFocus] = React.useState(false);
   const [passwdText, setPasswdText] = React.useState("");
@@ -81,25 +83,27 @@ const PasswdForm = (props: SubmitProps, ref: React.Ref<SubmitHandle>) => {
 
       return true;
     },
-    submit: (): boolean => {
-      // TODO: request
-      const data = {
-        username: props.username,
-        code: props.code,
+    submit: () => {
+      if (!props.username || !props.code) {
+        props.onFailure(t("UnknowError"));
+        return;
+      }
+
+      const data: ResetReq = {
+        username: props.username as string,
+        code: props.code as string,
         password: passwdText,
       };
 
-      if (true) {
-        props.setTipType("success");
-        props.setTipText(t("ResetSuccess"));
-        props.setTipStatus(true);
-        return true;
-      } else {
-        props.setTipType("error");
-        props.setTipText(t("UnknowError"));
-        props.setTipStatus(true);
-        return false;
-      }
+      fetchReset(
+        data,
+        (response: Response<ResetRsp>) => {
+          props.onSuccess(response.message);
+        },
+        (error: any) => {
+          props.onFailure(error.toString());
+        },
+      );
     },
   }));
 

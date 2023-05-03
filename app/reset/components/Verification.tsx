@@ -11,11 +11,16 @@ import Grid from "@mui/material/Grid";
 
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
-import { SubmitHandle, SubmitProps } from "./types";
+import { SubmitHandle, VerificationProps } from "./types";
+import { fetchCode } from "@/customize/api/user";
+import { CodeReq, CodeRsp, Response } from "@/customize/api/types";
 
 const captchaRef = React.createRef<ReCAPTCHA>();
 
-const VerificationForm = (props: SubmitProps, ref: React.Ref<SubmitHandle>) => {
+const VerificationForm = (
+  props: VerificationProps,
+  ref: React.Ref<SubmitHandle>,
+) => {
   const [seconds, setSeconds] = React.useState(-1);
   const [sended, setSended] = React.useState(false);
   const [canSend, setCanSend] = React.useState(true);
@@ -117,20 +122,52 @@ const VerificationForm = (props: SubmitProps, ref: React.Ref<SubmitHandle>) => {
   };
 
   const handleRequestCode = (value: string | null) => {
+    if (value == null) {
+      props.setTipType("error");
+      props.setTipText(t("UnknowError"));
+      setOpen(false);
+      props.setTipStatus(true);
+      return;
+    }
+
     setCanSend(false);
 
-    // TODO: request
+    const usernameElem: HTMLInputElement = document.getElementById(
+      "username",
+    ) as HTMLInputElement;
+    const username = usernameElem.value.trim();
 
-    if (true) {
-      setSeconds(RESEND_TIME);
-      setTimeout(() => {
-        props.setTipText(t("SentOk"));
+    const data: CodeReq = {
+      type: "reset",
+      username: username,
+      code: value,
+    };
+
+    fetchCode(
+      data,
+      (response: Response<CodeRsp>) => {
+        setSeconds(RESEND_TIME);
+        props.setTipText(response.message);
         props.setTipType("success");
-        setOpen(false);
         setSended(true);
-        props.setTipStatus(true);
-      }, 1000);
-    }
+
+        setTimeout(() => {
+          setOpen(false);
+          props.setTipStatus(true);
+        }, 1000);
+      },
+      (error: any) => {
+        setSeconds(10);
+        props.setTipType("error");
+        setSended(false);
+        props.setTipText(error.toString());
+
+        setTimeout(() => {
+          setOpen(false);
+          props.setTipStatus(true);
+        }, 1000);
+      },
+    );
   };
 
   return (

@@ -25,6 +25,14 @@ import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
+import { fetchCode, fetchSignUp } from "@/customize/api/user";
+import {
+  CodeReq,
+  CodeRsp,
+  Response,
+  SignUpRsp,
+  Status,
+} from "@/customize/api/types";
 
 const theme = createTheme();
 const captchaRef = React.createRef<ReCAPTCHA>();
@@ -105,28 +113,48 @@ export default function SignUp() {
   };
 
   const handleRequestCode = (value: string | null) => {
+    if (value == null) {
+      setTipType("error");
+      setTipText(t("UnknowError"));
+      setOpen(false);
+      setTipStatus(true);
+      return;
+    }
+
     setCanSend(false);
 
-    console.log(value);
-    const reqBody = {
+    const data: CodeReq = {
+      type: "signup",
       username: usernameText,
       email: emailText,
       code: value,
     };
 
-    //api.requestCode(reqBody)
-
-    // TODO
-    if (true) {
-      setSeconds(RESEND_TIME);
-      setTimeout(() => {
+    fetchCode(
+      data,
+      (response: Response<CodeRsp>) => {
+        setSeconds(RESEND_TIME);
         setTipType("success");
-        setTipText(t("SentOk"));
-        setOpen(false);
         setSended(true);
-        setTipStatus(true);
-      }, 1000);
-    }
+        setTipText(response.message);
+
+        setTimeout(() => {
+          setOpen(false);
+          setTipStatus(true);
+        }, 1000);
+      },
+      (error: any) => {
+        setSeconds(10);
+        setTipType("error");
+        setSended(false);
+        setTipText(error.toString());
+
+        setTimeout(() => {
+          setOpen(false);
+          setTipStatus(true);
+        }, 1000);
+      },
+    );
   };
 
   const usernameOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,28 +237,38 @@ export default function SignUp() {
 
     setRegistered(true);
 
-    const data = new FormData(event.currentTarget);
-    const body = {
-      // TODO: trim value
-      username: data.get("username"),
-      email: data.get("email"),
-      password: data.get("password"),
-      invitation_code: data.get("invitationCode"),
-      code: data.get("code"),
+    const rawData = new FormData(event.currentTarget);
+    // form container has ensured the following can't be empty except `invitationCode`
+    const inv = rawData.get("invitationCode");
+    const code = rawData.get("code");
+    const data = {
+      username: usernameText,
+      email: emailText,
+      password: passwdText,
+      invitation_code: inv ? (inv as string) : "",
+      code: code ? (code as string) : "",
     };
-    console.log("submit: ", body);
-    // TODO
-    if (true) {
-      setTipText(t("RegisterOk"));
-      setTipStatus(true);
 
-      // TODO: switch page
-      setTimeout(() => {
-        // have force refreshed recaptcha to avoid empty element
-        // it's safe to not reload page here
-        router.push("/signin");
-      }, 1500);
-    }
+    fetchSignUp(
+      data,
+      (response: Response<SignUpRsp>) => {
+        setTipText(response.message);
+        setTipType("success");
+        setTipStatus(true);
+
+        setTimeout(() => {
+          // have force refreshed recaptcha to avoid empty element
+          // it's safe to not reload page here
+          router.push("/signin");
+        }, 1500);
+      },
+      (error: any) => {
+        setTipText(error.toString());
+        setTipType("error");
+        setTipStatus(true);
+        setRegistered(false);
+      },
+    );
   };
 
   const codeOnError = () => {

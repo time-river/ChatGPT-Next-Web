@@ -32,7 +32,7 @@ export const userStore = createStore<UserStore>()(
       token: "",
 
       isSignIn(): boolean {
-        return this.token !== ""
+        return this.user.username !== "" && this.user.email !== "" && this.token !== ""
       },
       updateToekn(token: string) {
         set(() => ({token}));

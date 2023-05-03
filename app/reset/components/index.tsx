@@ -43,6 +43,23 @@ export default function Reset() {
   const TIPES_TIME = 5000;
   const STEPS = [t("Verification"), t("PasswdReset")];
 
+  function resetOnSuccess(message: string) {
+    setTipType("success");
+    setTipText(message);
+    setTipStatus(true);
+
+    setInterval(() => {
+      router.push("/signin");
+    }, 1500);
+  }
+
+  function resetOnFailure(message: string) {
+    setTipType("error");
+    setTipText(message);
+    setTipStatus(true);
+    setButtonDisable(false);
+  }
+
   function getStepContent(step: number) {
     switch (step) {
       case 0:
@@ -60,11 +77,10 @@ export default function Reset() {
         return (
           <PasswdForm
             ref={resetRef}
-            setTipType={setTipType}
-            setTipStatus={setTipStatus}
-            setTipText={setTipText}
             code={code}
             username={username}
+            onSuccess={resetOnSuccess}
+            onFailure={resetOnFailure}
           />
         );
       default:
@@ -89,13 +105,7 @@ export default function Reset() {
       }
 
       setButtonDisable(true);
-      if (!resetRef.current?.submit()) {
-        return;
-      }
-
-      setInterval(() => {
-        router.push("/signin");
-      }, 1500);
+      resetRef.current?.submit();
     }
   };
 

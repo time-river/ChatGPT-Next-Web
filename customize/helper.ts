@@ -32,6 +32,7 @@ const Locale = {
     ChangePasswd: "更改密码",
     UnknowError: "未知错误，请刷新页面重试",
     ResetSuccess: "重置密码成功",
+    ServerError: "服务端异常",
   },
 }
 
