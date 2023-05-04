@@ -2,6 +2,7 @@
 
 import { createStore } from 'zustand/vanilla'
 import { persist } from "zustand/middleware";
+import { CheatpptStoreKey } from './constant';
 
 export interface UserInfo {
   username: string,
@@ -22,7 +23,7 @@ export interface UserStore {
     signOut: () => void,
 }
 
-export const userStore = createStore<UserStore>()(
+export const useUser = createStore<UserStore>()(
   persist(
     (set, get) => ({
       user: {
@@ -32,7 +33,7 @@ export const userStore = createStore<UserStore>()(
       token: "",
 
       isSignIn(): boolean {
-        return this.user.username !== "" && this.user.email !== "" && this.token !== ""
+        return this.user.username !== "" && this.user.email !== "" && this.token !== "";
       },
       updateToekn(token: string) {
         set(() => ({token}));
@@ -46,7 +47,7 @@ export const userStore = createStore<UserStore>()(
       }
     }),
     {
-      name: "cheatppt-user",
+      name: CheatpptStoreKey.User,
       version: 1,
     }
   )

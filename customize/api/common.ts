@@ -1,9 +1,9 @@
 "use client;"
 
-import axios, { type AxiosResponse, Method } from 'axios';
+import axios, { type AxiosResponse, Method, AxiosHeaders } from 'axios';
 
 import globalConfig from '@/global.config';
-import { userStore } from '../user/store';
+import { useUser } from '../store/user';
 import { HttpOption, Response, Status } from "./types";
 
 const request = axios.create({
@@ -26,10 +26,10 @@ request.interceptors.request.use(
     // api url must be start with `/api`
     if (pathname.startsWith("/api") && !(pathname in whitePaths)) {
       if (!config.headers) {
-        config.headers = {}
+        config.headers = new AxiosHeaders();
       }
 
-      const { getState } = userStore
+      const { getState } = useUser
       const token = getState().token
   
       config.headers.Authorization = `Bearer ${token}`
