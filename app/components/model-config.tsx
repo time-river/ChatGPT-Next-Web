@@ -1,34 +1,55 @@
-import { ALL_MODELS, ModalConfigValidator, ModelConfig } from "../store";
-
+import * as React from "react";
 import Locale from "../locales";
 import { InputRange } from "./input-range";
+
 import { List, ListItem, Select } from "./ui-lib";
+import { useModels } from "@/customize/store/model";
+import { ModalConfigValidator, ModelConfig } from "@/customize/store/config";
 
 export function ModelConfigList(props: {
   modelConfig: ModelConfig;
   updateConfig: (updater: (config: ModelConfig) => void) => void;
 }) {
+  const { getState } = useModels;
+  const models = getState().models;
+  const [current, setCurrent] = React.useState(getState().current);
+  const [showConfig, setShowConfig] = React.useState(models[current].hasConfig);
+
   return (
     <>
       <ListItem title={Locale.Settings.Model}>
         <Select
-          value={props.modelConfig.model}
+          value={current}
           onChange={(e) => {
+            const idx = Number(e.currentTarget.value);
+            const model = models[idx];
+
+            setCurrent(idx);
+            setShowConfig(model.hasConfig);
+            getState().setCurrent(idx);
+            if (!model.hasConfig) {
+              return;
+            }
+
+            /* only update when it's OpenAI API model */
             props.updateConfig(
               (config) =>
                 (config.model = ModalConfigValidator.model(
-                  e.currentTarget.value,
+                  Number(e.currentTarget.value),
                 )),
             );
           }}
         >
-          {ALL_MODELS.map((v) => (
-            <option value={v.name} key={v.name} disabled={!v.available}>
+          {models.map((v) => (
+            <option value={v.id} key={v.id}>
               {v.name}
             </option>
           ))}
         </Select>
       </ListItem>
+
+      {showConfig && (
+        <>
       <ListItem
         title={Locale.Settings.Temperature.Title}
         subTitle={Locale.Settings.Temperature.SubTitle}
@@ -100,12 +121,12 @@ export function ModelConfigList(props: {
           step="1"
           onChange={(e) =>
             props.updateConfig(
-              (config) => (config.historyMessageCount = e.target.valueAsNumber),
+              (config) =>
+                (config.historyMessageCount = e.target.valueAsNumber),
             )
           }
         ></InputRange>
       </ListItem>
-
       <ListItem
         title={Locale.Settings.CompressThreshold.Title}
         subTitle={Locale.Settings.CompressThreshold.SubTitle}
@@ -135,6 +156,8 @@ export function ModelConfigList(props: {
           }
         ></input>
       </ListItem>
+        </>
+      )}
     </>
   );
 }

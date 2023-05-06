@@ -30,6 +30,7 @@ import globalCfg from "@/global.config";
 import { fetchSignIn } from "@/customize/api/user";
 import { Response, SignInReq, SignInRsp } from "@/customize/api/types";
 import { useUser } from "@/customize/store/user";
+import { useModels } from "@/customize/store/model";
 
 const theme = createTheme();
 const captchaRef = React.createRef<ReCAPTCHA>();
@@ -84,9 +85,9 @@ export default function SignIn() {
         }
 
         const data: SignInRsp = response.data as SignInRsp;
-        const { getState } = useUser;
 
-        getState().signIn({ ...data });
+        useUser.getState().signIn({ ...data });
+        useModels.getState().refresh(data.model_setting);
         setTipType("success");
         setTipText(response.message);
 

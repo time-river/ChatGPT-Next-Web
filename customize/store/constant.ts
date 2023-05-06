@@ -1,3 +1,5 @@
 export enum CheatpptStoreKey {
-    User = "cheattppt-user"
+    User = "cheattppt-user",
+    Models = "cheatppt-models",
+    Config = "cheatppt-config",
 }

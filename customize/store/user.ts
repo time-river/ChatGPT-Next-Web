@@ -16,11 +16,13 @@ export interface UserStore {
         email: string,
     },
     token: string,
+    isValid: boolean,
 
     isSignIn: () => boolean,
     updateToekn: (_:string) => void,
     signIn: (_: UserInfo) => void,
     signOut: () => void,
+    setValid: (_: boolean) => void,
 }
 
 export const useUser = createStore<UserStore>()(
@@ -31,9 +33,10 @@ export const useUser = createStore<UserStore>()(
         email: "",
       },
       token: "",
+      isValid: false,
 
       isSignIn(): boolean {
-        return this.user.username !== "" && this.user.email !== "" && this.token !== "";
+        return this.isValid;
       },
       updateToekn(token: string) {
         set(() => ({token}));
@@ -44,7 +47,10 @@ export const useUser = createStore<UserStore>()(
       signOut() {
         localStorage.clear();
         window.location.href = "/signin";
-      }
+      },
+      setValid(valid: boolean) {
+        set(() => ({ isValid: valid }));
+      },
     }),
     {
       name: CheatpptStoreKey.User,

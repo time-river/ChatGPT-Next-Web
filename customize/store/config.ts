@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { StoreKey } from "../constant";
+import { CheatpptStoreKey } from "./constant";
+import { useModels } from "./model";
 
 export enum SubmitKey {
   Enter = "Enter",
@@ -16,6 +17,16 @@ export enum Theme {
   Light = "light",
 }
 
+const DEFAULT_MODEL_CONFIG = {
+  model: "gpt-3.5-turbo",
+  temperature: 0.5,
+  max_tokens: 2000,
+  presence_penalty: 0,
+  sendMemory: true,
+  historyMessageCount: 4,
+  compressMessageLengthThreshold: 1000,
+};
+
 export const DEFAULT_CONFIG = {
   submitKey: SubmitKey.CtrlEnter as SubmitKey,
   avatar: "1f603",
@@ -29,84 +40,17 @@ export const DEFAULT_CONFIG = {
 
   dontShowMaskSplashScreen: false, // dont show splash screen when create chat
 
-  modelConfig: {
-    model: "gpt-3.5-turbo" as ModelType,
-    temperature: 0.5,
-    max_tokens: 2000,
-    presence_penalty: 0,
-    sendMemory: true,
-    historyMessageCount: 4,
-    compressMessageLengthThreshold: 1000,
-  },
+  modelConfig: DEFAULT_MODEL_CONFIG, // only used in OpenAI API mode
 };
 
+export type ModelConfig = typeof DEFAULT_MODEL_CONFIG;
 export type ChatConfig = typeof DEFAULT_CONFIG;
+export type ModelType = string;
 
 export type ChatConfigStore = ChatConfig & {
   reset: () => void;
   update: (updater: (config: ChatConfig) => void) => void;
 };
-
-export type ModelConfig = ChatConfig["modelConfig"];
-
-const ENABLE_GPT4 = true;
-
-export const ALL_MODELS = [
-  {
-    name: "gpt-4",
-    available: ENABLE_GPT4,
-  },
-  {
-    name: "gpt-4-0314",
-    available: ENABLE_GPT4,
-  },
-  {
-    name: "gpt-4-32k",
-    available: ENABLE_GPT4,
-  },
-  {
-    name: "gpt-4-32k-0314",
-    available: ENABLE_GPT4,
-  },
-  {
-    name: "gpt-4-mobile",
-    available: ENABLE_GPT4,
-  },
-  {
-    name: "text-davinci-002-render-sha-mobile",
-    available: true,
-  },
-  {
-    name: "gpt-3.5-turbo",
-    available: true,
-  },
-  {
-    name: "gpt-3.5-turbo-0301",
-    available: true,
-  },
-  {
-    name: "qwen-v1", // 通义千问
-    available: false,
-  },
-  {
-    name: "ernie", // 文心一言
-    available: false,
-  },
-  {
-    name: "spark", // 讯飞星火
-    available: false,
-  },
-  {
-    name: "llama", // llama
-    available: false,
-  },
-  {
-    name: "chatglm", // chatglm-6b
-    available: false,
-  },
-] as const;
-
-export type ModelType = (typeof ALL_MODELS)[number]["name"];
 
 export function limitNumber(
   x: number,
@@ -121,15 +65,18 @@ export function limitNumber(
   return Math.min(max, Math.max(min, x));
 }
 
-export function limitModel(name: string) {
-  return ALL_MODELS.some((m) => m.name === name && m.available)
-    ? name
-    : ALL_MODELS[4].name;
+export function limitModel(idx: number) {
+  const { getState } = useModels;
+  const models = getState().models;
+
+  return models.some((m) => m.id === idx && m.hasConfig)
+    ? models[idx].name
+    : DEFAULT_MODEL_CONFIG.model;
 }
 
 export const ModalConfigValidator = {
-  model(x: string) {
-    return limitModel(x) as ModelType;
+  model(x: number):string {
+    return limitModel(x);
   },
   max_tokens(x: number) {
     return limitNumber(x, 0, 32000, 2000);
@@ -158,7 +105,7 @@ export const useAppConfig = create<ChatConfigStore>()(
       },
     }),
     {
-      name: StoreKey.Config,
+      name: CheatpptStoreKey.Config,
       version: 2,
       migrate(persistedState, version) {
         if (version === 2) return persistedState as any;

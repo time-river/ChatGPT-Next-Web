@@ -3,7 +3,8 @@ import { persist } from "zustand/middleware";
 import { StoreKey } from "../constant";
 import { getHeaders } from "../client/api";
 import { BOT_HELLO } from "./chat";
-import { ALL_MODELS } from "./config";
+
+const ALL_MODELS: { name: string }[] = [];
 
 export interface AccessControlStore {
   accessCode: string;

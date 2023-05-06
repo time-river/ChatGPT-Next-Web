@@ -31,10 +31,24 @@ export interface SignInReq {
   code: string,
 }
 
+export interface Model {
+  id: number,
+  name: string,
+
+  hasConfig: boolean, // TODO: per model per config?
+};
+
+export interface ModelSetting {
+  current: number,
+  models: Model[],
+};
+
 export interface SignInRsp {
   username: string,
   email: string,
   token: string,
+
+  model_setting: ModelSetting,
 }
 
 export type CodeReqType = 'signup' | 'reset'

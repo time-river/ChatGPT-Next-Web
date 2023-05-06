@@ -1,5 +1,7 @@
-import { SubmitKey } from "../store/config";
+
 import { RequiredLocaleType } from "./index";
+import { SubmitKey } from "@/customize/store/config";
+import type { LocaleType } from "./index";
 
 const en: RequiredLocaleType = {
   WIP: "Coming Soon...",
