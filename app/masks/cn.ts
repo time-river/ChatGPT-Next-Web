@@ -58,6 +58,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f978",
@@ -81,6 +83,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f69b",
@@ -104,6 +108,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f469-200d-1f4bc",
@@ -127,6 +133,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f9d1-200d-1f3eb",
@@ -150,6 +158,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f4da",
@@ -173,6 +183,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f4d5",
@@ -196,6 +208,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f4d1",
@@ -247,6 +261,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f4b8",
@@ -276,6 +292,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "270d-fe0f",
@@ -305,6 +323,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f63e",
@@ -355,6 +375,8 @@ export const CN_MASKS: BuiltinMask[] = [
     },
     lang: "cn",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "1f513",

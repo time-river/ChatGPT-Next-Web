@@ -13,6 +13,8 @@ import { api, RequestMessage } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 
+import { useModels } from "@/customize/store/model";
+
 export type ChatMessage = RequestMessage & {
   date: string;
   streaming?: boolean;
@@ -160,6 +162,18 @@ export const useChatStore = create<ChatStore>()(
         if (mask) {
           session.mask = { ...mask };
           session.topic = mask.name;
+        }
+
+        /* no specify the model */
+        if (session.mask.modelId == -1) {
+          const modelStore = useModels.getState();
+          const current = modelStore.current;
+          const model = modelStore.models[current];
+
+          session.mask.modelId = current;
+          if (model.hasConfig) {
+            session.mask.modelConfig.model = model.name;
+          }
         }
 
         set((state) => ({

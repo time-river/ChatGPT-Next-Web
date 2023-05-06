@@ -62,6 +62,8 @@ import { useCommand } from "../command";
 import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 
+import { ModelSelection } from "./model-selection";
+
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
@@ -728,6 +730,8 @@ export function Chat() {
           setShowModal={setShowPromptModal}
         />
       </div>
+
+      <ModelSelection />
 
       <div
         className={styles["chat-body"]}

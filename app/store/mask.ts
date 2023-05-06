@@ -17,6 +17,9 @@ export type Mask = {
   modelConfig: ModelConfig;
   lang: Lang;
   builtin: boolean;
+
+  modelId: number;
+  hasModelConfig: boolean;
 };
 
 export const DEFAULT_MASK_STATE = {
@@ -46,6 +49,9 @@ export const createEmptyMask = () =>
     modelConfig: { ...useAppConfig.getState().modelConfig },
     lang: getLang(),
     builtin: false,
+
+    modelId: -1, // the unique tag of the model
+    hasModelConfig: false,
   } as Mask);
 
 export const useMaskStore = create<MaskStore>()(

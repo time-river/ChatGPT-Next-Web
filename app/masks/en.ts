@@ -63,6 +63,8 @@ export const EN_MASKS: BuiltinMask[] = [
     },
     lang: "en",
     builtin: true,
+    modelId: -1,
+    hasModelConfig: false,
   },
   {
     avatar: "2328-fe0f",
