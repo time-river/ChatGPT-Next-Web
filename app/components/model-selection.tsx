@@ -33,11 +33,9 @@ export function ModelSelection() {
 
     useChatStore.getState().updateCurrentSession((session) => {
       session.mask.modelId = idx;
-      session.mask.hasModelConfig = model.hasConfig;
+      session.mask.isChatGPT = model.isChatGPT;
 
-      if (model.hasConfig) {
-        session.mask.modelConfig.model = model.name;
-      }
+      session.mask.modelConfig.model = model.modelName;
     });
   }
 
@@ -52,7 +50,7 @@ export function ModelSelection() {
           >
             {models.map((v) => (
               <option value={v.id} key={v.id}>
-                {v.name}
+                {v.displayName}
               </option>
             ))}
           </select>

@@ -13,7 +13,7 @@ export function ModelConfigList(props: {
   const { getState } = useModels;
   const models = getState().models;
   const [current, setCurrent] = React.useState(getState().current);
-  const [showConfig, setShowConfig] = React.useState(models[current].hasConfig);
+  const [showConfig, setShowConfig] = React.useState(models[current].isChatGPT);
 
   return (
     <>
@@ -25,13 +25,9 @@ export function ModelConfigList(props: {
             const model = models[idx];
 
             setCurrent(idx);
-            setShowConfig(model.hasConfig);
+            setShowConfig(model.isChatGPT);
             getState().setCurrent(idx);
-            if (!model.hasConfig) {
-              return;
-            }
 
-            /* only update when it's OpenAI API model */
             props.updateConfig(
               (config) =>
                 (config.model = ModalConfigValidator.model(
@@ -42,7 +38,7 @@ export function ModelConfigList(props: {
         >
           {models.map((v) => (
             <option value={v.id} key={v.id}>
-              {v.name}
+              {v.displayName}
             </option>
           ))}
         </Select>

@@ -18,7 +18,7 @@ export enum Theme {
 }
 
 const DEFAULT_MODEL_CONFIG = {
-  model: "gpt-3.5-turbo", // it's name is abandoned, reserve it just for compatibility
+  model: "gpt-3.5-turbo",
   temperature: 0.5,
   max_tokens: 2000,
   presence_penalty: 0,
@@ -69,8 +69,8 @@ export function limitModel(idx: number) {
   const { getState } = useModels;
   const models = getState().models;
 
-  return models.some((m) => m.id === idx && m.hasConfig)
-    ? models[idx].name
+  return models.some((m) => m.id === idx)
+    ? models[idx].modelName
     : DEFAULT_MODEL_CONFIG.model;
 }
 

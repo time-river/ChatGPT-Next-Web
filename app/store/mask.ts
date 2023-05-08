@@ -19,7 +19,7 @@ export type Mask = {
   builtin: boolean;
 
   modelId: number;
-  hasModelConfig: boolean;
+  isChatGPT: boolean;
 };
 
 export const DEFAULT_MASK_STATE = {
@@ -51,7 +51,7 @@ export const createEmptyMask = () =>
     builtin: false,
 
     modelId: -1, // the unique tag of the model
-    hasModelConfig: false,
+    isChatGPT: false,
   } as Mask);
 
 export const useMaskStore = create<MaskStore>()(

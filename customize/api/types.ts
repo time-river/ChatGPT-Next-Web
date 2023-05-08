@@ -33,9 +33,10 @@ export interface SignInReq {
 
 export interface Model {
   id: number,
-  name: string,
+  modelName: string,
+  displayName: string,
 
-  hasConfig: boolean, // TODO: per model per config?
+  isChatGPT: boolean,
 };
 
 export interface ModelSetting {

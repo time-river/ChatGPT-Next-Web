@@ -171,9 +171,7 @@ export const useChatStore = create<ChatStore>()(
           const model = modelStore.models[current];
 
           session.mask.modelId = current;
-          if (model.hasConfig) {
-            session.mask.modelConfig.model = model.name;
-          }
+          session.mask.modelConfig.model = model.modelName;
         }
 
         set((state) => ({
