@@ -31,6 +31,8 @@ export function ModelSelection() {
     /* only update the current session */
     const model = models[idx];
 
+    console.debug("switch model to: ", model);
+
     useChatStore.getState().updateCurrentSession((session) => {
       session.mask.modelId = idx;
       session.mask.isChatGPT = model.isChatGPT;
@@ -48,8 +50,8 @@ export function ModelSelection() {
             value={current}
             onChange={modelSelectionOnChange}
           >
-            {models.map((v) => (
-              <option value={v.id} key={v.id}>
+            {models.map((v, idx) => (
+              <option value={idx} key={v.id}>
                 {v.displayName}
               </option>
             ))}

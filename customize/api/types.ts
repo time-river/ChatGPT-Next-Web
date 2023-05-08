@@ -1,7 +1,11 @@
+import { AxiosProgressEvent, GenericAbortSignal } from "axios"
+
 export interface HttpOption {
   url: string,
   data?: any,
   headers?: any,
+  signal?: GenericAbortSignal
+  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
 }
 
 export enum Status {
@@ -19,7 +23,7 @@ export interface SignUpReq {
   username: string,
   email: string,
   password: string,
-  invitation_code: string,
+  invitationCode: string,
   code: string,
 }
 
@@ -40,7 +44,7 @@ export interface Model {
 };
 
 export interface ModelSetting {
-  current: number,
+  default: number,
   models: Model[],
 };
 
@@ -49,7 +53,7 @@ export interface SignInRsp {
   email: string,
   token: string,
 
-  model_setting: ModelSetting,
+  modelSetting: ModelSetting,
 }
 
 export type CodeReqType = 'signup' | 'reset'
@@ -61,9 +65,7 @@ export interface CodeReq {
   code: string,
 }
 
-export interface CodeRsp {
-  code: string,
-}
+export interface CodeRsp {}
 
 export interface ResetReq {
   username: string,
@@ -72,3 +74,4 @@ export interface ResetReq {
 }
 
 export interface ResetRsp { }
+

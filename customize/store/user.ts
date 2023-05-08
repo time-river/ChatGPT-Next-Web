@@ -5,9 +5,9 @@ import { persist } from "zustand/middleware";
 import { CheatpptStoreKey } from './constant';
 
 export interface UserInfo {
-  username: string,
-  email: string,
-  token: string,
+  username: string;
+  email: string;
+  token: string;
 }
 
 export interface UserStore {

@@ -27,6 +27,7 @@ const Locale = {
     ResetPasswd: "重置密码",
     PasswdReset: "密码重置",
     InputUsername: "请输入用户名",
+    Back: "上一步",
     Next: "下一步",
     Confirm: "确认",
     ChangePasswd: "更改密码",

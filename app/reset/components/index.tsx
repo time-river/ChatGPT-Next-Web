@@ -71,6 +71,8 @@ export default function Reset() {
             setTipText={setTipText}
             setUsername={setUsername}
             setCode={setCode}
+            defaultCode={code}
+            defaultUsername={username}
           />
         );
       case 1:
@@ -171,6 +173,17 @@ export default function Reset() {
               </Grid>
 
               <Grid item>
+                {activeStep > 0 && (
+                  <Button
+                    variant="text"
+                    onClick={handleBack}
+                    sx={{ mt: 3, ml: 1 }}
+                    disabled={buttonDisable}
+                  >
+                    {t("Back")}
+                  </Button>
+                )}
+
                 <Button
                   variant="contained"
                   onClick={handleNext}

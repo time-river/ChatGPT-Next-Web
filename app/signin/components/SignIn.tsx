@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 
 // https://mui.com/material-ui/guides/minimizing-bundle-size/
 import Avatar from "@mui/material/Avatar";
@@ -36,8 +35,6 @@ const theme = createTheme();
 const captchaRef = React.createRef<ReCAPTCHA>();
 
 export default function SignIn() {
-  const router = useRouter();
-
   const [logined, setLogined] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [tipStatus, setTipStatus] = React.useState(false);
@@ -87,7 +84,7 @@ export default function SignIn() {
         const data: SignInRsp = response.data as SignInRsp;
 
         useUser.getState().signIn({ ...data });
-        useModels.getState().refresh(data.model_setting);
+        useModels.getState().refresh(data.modelSetting);
         setTipType("success");
         setTipText(response.message);
 
@@ -112,11 +109,6 @@ export default function SignIn() {
       },
     );
   };
-
-  // speed up home page loading
-  React.useEffect(() => {
-    router.prefetch("/");
-  }, [router]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

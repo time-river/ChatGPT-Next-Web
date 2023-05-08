@@ -12,8 +12,10 @@ export function ModelConfigList(props: {
 }) {
   const { getState } = useModels;
   const models = getState().models;
-  const [current, setCurrent] = React.useState(getState().current);
-  const [showConfig, setShowConfig] = React.useState(models[current].isChatGPT);
+  const [current, setCurrent] = React.useState(getState().default);
+  const [showConfig, setShowConfig] = React.useState(
+    !models[current].isChatGPT,
+  );
 
   return (
     <>
@@ -25,8 +27,8 @@ export function ModelConfigList(props: {
             const model = models[idx];
 
             setCurrent(idx);
-            setShowConfig(model.isChatGPT);
-            getState().setCurrent(idx);
+            setShowConfig(!model.isChatGPT);
+            getState().setDefault(idx);
 
             props.updateConfig(
               (config) =>
@@ -36,8 +38,8 @@ export function ModelConfigList(props: {
             );
           }}
         >
-          {models.map((v) => (
-            <option value={v.id} key={v.id}>
+          {models.map((v, idx) => (
+            <option value={idx} key={v.id}>
               {v.displayName}
             </option>
           ))}

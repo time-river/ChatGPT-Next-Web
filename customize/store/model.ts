@@ -8,32 +8,44 @@ import { CheatpptStoreKey } from "./constant";
 import { useUser } from "./user";
 
 export interface ModelStore {
-  current: number;
+  default: number;
   models: Model[];
 
   refresh: (data: ModelSetting) => void;
-  setCurrent: (_: number) => void;
+  setDefault: (_: number) => void;
+  getModelById: (_: number) => Model;
 };
 
 export const useModels = create<ModelStore>()(
   persist(
     (set, get) => ({
-      current: -1,
+      default: -1,
       models: [],
 
       refresh: (data: ModelSetting) => {
         const models = data.models;
 
         useUser.getState().setValid(models.length > 0);
-        set(() => ({current: data.current, models: data.models}));
+        set(() => ({default: data.default, models: data.models}));
       },
-      setCurrent: (idx: number) => {
+      setDefault: (idx: number) => {
         if (idx < 0 || idx > get().models.length) {
           return;
         }
 
-        set(() => ({current: idx}));
+        set(() => ({default: idx}));
       },
+      getModelById: (id: number): Model => {
+        const models = get().models;
+
+        for (let i = 0; i < models.length; i++) {
+          if (models[i].id === id) {
+            return models[i];
+          }
+        }
+
+        return models[get().default];
+      }
     }),
     {
       name: CheatpptStoreKey.Models,

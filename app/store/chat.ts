@@ -15,12 +15,30 @@ import { prettyObject } from "../utils/format";
 
 import { useModels } from "@/customize/store/model";
 
+/* https://chat.openai.com */
+declare const ChatGPTMessageRoleEnum: {
+  readonly System: "system";
+  readonly User: "user";
+  readonly Assistant: "assistant";
+};
+declare type ChatGPTMessageRoleEnum =
+  (typeof ChatGPTMessageRoleEnum)[keyof typeof ChatGPTMessageRoleEnum];
+interface ChatGPTMessage {
+  role: ChatGPTMessageRoleEnum;
+  content: string;
+  /* the above is the same as `ChatCompletionResponseMessage` defination */
+}
+
 export type ChatMessage = RequestMessage & {
   date: string;
   streaming?: boolean;
   isError?: boolean;
   id?: number;
   model?: ModelType;
+
+  /* ChatGPT message has the following attributes except the first */
+  conversationId?: string; // the first message is null
+  parentMessageId?: string; // the first message is null
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -88,6 +106,7 @@ interface ChatStore {
   deleteSession: (index: number) => void;
   currentSession: () => ChatSession;
   onNewMessage: (message: ChatMessage) => void;
+  chatgptInput: (content: string) => Promise<void>;
   onUserInput: (content: string) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: ChatMessage) => void;
@@ -167,7 +186,7 @@ export const useChatStore = create<ChatStore>()(
         /* no specify the model */
         if (session.mask.modelId == -1) {
           const modelStore = useModels.getState();
-          const current = modelStore.current;
+          const current = modelStore.default;
           const model = modelStore.models[current];
 
           session.mask.modelId = current;
@@ -245,15 +264,23 @@ export const useChatStore = create<ChatStore>()(
         get().summarizeSession();
       },
 
+      // ChatGPT begin
+      async chatgptInput(content: string) {},
+
       async onUserInput(content) {
         const session = get().currentSession();
-        const modelConfig = session.mask.modelConfig;
 
+        if (session.mask.isChatGPT) {
+          return get().chatgptInput(content);
+        }
+
+        const modelConfig = session.mask.modelConfig;
+        
         const userMessage: ChatMessage = createMessage({
           role: "user",
           content,
         });
-
+    
         const botMessage: ChatMessage = createMessage({
           role: "assistant",
           streaming: true,

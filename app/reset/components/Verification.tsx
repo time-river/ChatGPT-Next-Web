@@ -185,6 +185,7 @@ const VerificationForm = (
             name="username"
             focused={usernameFocus}
             onFocus={handleUsernameFocus}
+            defaultValue={props.defaultUsername}
           />
         </Grid>
 
@@ -197,6 +198,7 @@ const VerificationForm = (
             name="code"
             focused={codeFocus}
             onFocus={handleCodeFocus}
+            defaultValue={props.defaultCode}
           />
         </Grid>
         <Grid item xs={3}>

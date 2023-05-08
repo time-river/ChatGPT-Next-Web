@@ -5,6 +5,8 @@ import * as React from "react";
 import { AlertColor } from "@mui/material/Alert";
 
 export interface VerificationProps {
+  defaultUsername: string;
+  defaultCode: string;
   setTipType: React.Dispatch<React.SetStateAction<AlertColor>>;
   setTipStatus: React.Dispatch<React.SetStateAction<boolean>>;
   setTipText: React.Dispatch<React.SetStateAction<string>>;

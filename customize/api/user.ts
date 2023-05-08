@@ -60,7 +60,7 @@ export function fetchReset(data: ResetReq,
   onrejected: (error: any) => void) {
 
   const options = {
-    url: ApiURL.signin,
+    url: ApiURL.reset,
     data: data,
   }
 

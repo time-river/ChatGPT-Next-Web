@@ -35,7 +35,7 @@ request.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    //console.debug(config.data)
+    console.debug(config.data)
 
     return config
   },
@@ -47,7 +47,7 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => {
     if (response.status === 200) {
-      //console.debug(response.data)
+      console.debug(response.data)
       return response
   }
 
