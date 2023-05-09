@@ -1,12 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { ErrorBoundary } from "../components/error";
 import SignIn from "./components/SignIn";
 
-export default async function App() {
-  return (
-    <ErrorBoundary>
-      <SignIn />
-    </ErrorBoundary>
-  );
+// begin to render until all of components has been loaded to prevent deadloop
+export default function App() {
+  const [jsLoaded, setJsLoaded] = useState(false);
+
+  useEffect(() => {
+    setJsLoaded(true);
+  }, []);
+
+  return <ErrorBoundary>{jsLoaded && <SignIn />}</ErrorBoundary>;
 }
