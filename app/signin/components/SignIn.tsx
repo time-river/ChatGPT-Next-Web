@@ -26,8 +26,8 @@ import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
-import { fetchSignIn } from "@/customize/api/user";
-import { Response, SignInReq, SignInRsp } from "@/customize/api/types";
+import { fetchSignIn } from "@/customize/api/user/user";
+import { Response, SignInReq, SignInRsp } from "@/customize/api/user/types";
 import { useUser } from "@/customize/store/user";
 import { useModels } from "@/customize/store/model";
 

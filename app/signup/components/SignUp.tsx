@@ -25,14 +25,15 @@ import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
-import { fetchCode, fetchSignUp } from "@/customize/api/user";
+import { fetchCode, fetchSignUp } from "@/customize/api/user/user";
 import {
   CodeReq,
   CodeRsp,
   Response,
+  SignUpReq,
   SignUpRsp,
   Status,
-} from "@/customize/api/types";
+} from "@/customize/api/user/types";
 
 const theme = createTheme();
 const captchaRef = React.createRef<ReCAPTCHA>();
@@ -241,11 +242,11 @@ export default function SignUp() {
     // form container has ensured the following can't be empty except `invitationCode`
     const inv = rawData.get("invitationCode");
     const code = rawData.get("code");
-    const data = {
+    const data: SignUpReq = {
       username: usernameText,
       email: emailText,
       password: passwdText,
-      invitation_code: inv ? (inv as string) : "",
+      invitationCode: inv ? (inv as string) : "",
       code: code ? (code as string) : "",
     };
 

@@ -3,7 +3,7 @@
 import axios, { type AxiosResponse, Method, AxiosHeaders } from 'axios';
 
 import globalConfig from '@/global.config';
-import { useUser } from '../store/user';
+import { useUser } from '../../store/user';
 import { HttpOption, Response, Status } from "./types";
 
 const request = axios.create({

@@ -9,8 +9,8 @@ import { SubmitHandle, PasswdProps } from "./types";
 
 import { t } from "@/customize/helper";
 import globalConfig from "@/global.config";
-import { ResetReq, ResetRsp, Response } from "@/customize/api/types";
-import { fetchReset } from "@/customize/api/user";
+import { ResetReq, ResetRsp, Response } from "@/customize/api/user/types";
+import { fetchReset } from "@/customize/api/user/user";
 
 const PasswdForm = (props: PasswdProps, ref: React.Ref<SubmitHandle>) => {
   const [passwdFocus, setPasswdFocus] = React.useState(false);

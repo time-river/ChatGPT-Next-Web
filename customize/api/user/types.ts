@@ -1,11 +1,9 @@
-import { AxiosProgressEvent, GenericAbortSignal } from "axios"
+import { AxiosHeaders } from "axios"
 
 export interface HttpOption {
   url: string,
   data?: any,
-  headers?: any,
-  signal?: GenericAbortSignal
-  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
+  headers?: AxiosHeaders,
 }
 
 export enum Status {

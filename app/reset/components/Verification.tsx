@@ -12,8 +12,8 @@ import Grid from "@mui/material/Grid";
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
 import { SubmitHandle, VerificationProps } from "./types";
-import { fetchCode } from "@/customize/api/user";
-import { CodeReq, CodeRsp, Response } from "@/customize/api/types";
+import { fetchCode } from "@/customize/api/user/user";
+import { CodeReq, CodeRsp, Response } from "@/customize/api/user/types";
 
 const captchaRef = React.createRef<ReCAPTCHA>();
 
