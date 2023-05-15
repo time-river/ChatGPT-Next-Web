@@ -58,3 +58,7 @@ export const useUser = createStore<UserStore>()(
     }
   )
 )
+
+export function getToken() {
+  return useUser.getState().token
+}

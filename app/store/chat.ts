@@ -14,20 +14,7 @@ import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 
 import { useModels } from "@/customize/store/model";
-
-/* https://chat.openai.com */
-declare const ChatGPTMessageRoleEnum: {
-  readonly System: "system";
-  readonly User: "user";
-  readonly Assistant: "assistant";
-};
-declare type ChatGPTMessageRoleEnum =
-  (typeof ChatGPTMessageRoleEnum)[keyof typeof ChatGPTMessageRoleEnum];
-interface ChatGPTMessage {
-  role: ChatGPTMessageRoleEnum;
-  content: string;
-  /* the above is the same as `ChatCompletionResponseMessage` defination */
-}
+import * as chatgpt from "@/app/client/platforms/chatgpt";
 
 export type ChatMessage = RequestMessage & {
   date: string;
@@ -37,6 +24,7 @@ export type ChatMessage = RequestMessage & {
   model?: ModelType;
 
   /* ChatGPT message has the following attributes except the first */
+  messageId?: string;
   conversationId?: string; // the first message is null
   parentMessageId?: string; // the first message is null
 };
@@ -106,7 +94,7 @@ interface ChatStore {
   deleteSession: (index: number) => void;
   currentSession: () => ChatSession;
   onNewMessage: (message: ChatMessage) => void;
-  chatgptInput: (content: string) => Promise<void>;
+  update: () => void;
   onUserInput: (content: string) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: ChatMessage) => void;
@@ -191,6 +179,7 @@ export const useChatStore = create<ChatStore>()(
 
           session.mask.modelId = current;
           session.mask.modelConfig.model = model.modelName;
+          session.mask.isChatGPT = model.isChatGPT;
         }
 
         set((state) => ({
@@ -256,31 +245,32 @@ export const useChatStore = create<ChatStore>()(
         return session;
       },
 
+      update() {
+        set(() => ({}));
+      },
+
       onNewMessage(message) {
         get().updateCurrentSession((session) => {
           session.lastUpdate = Date.now();
         });
         get().updateStat(message);
-        get().summarizeSession();
+        //        get().summarizeSession();
       },
-
-      // ChatGPT begin
-      async chatgptInput(content: string) {},
 
       async onUserInput(content) {
         const session = get().currentSession();
 
         if (session.mask.isChatGPT) {
-          return get().chatgptInput(content);
+          return chatgpt.requestChatStream(content, session);
         }
 
         const modelConfig = session.mask.modelConfig;
-        
+
         const userMessage: ChatMessage = createMessage({
           role: "user",
           content,
         });
-    
+
         const botMessage: ChatMessage = createMessage({
           role: "assistant",
           streaming: true,

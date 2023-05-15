@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { Model, ModelSetting } from "../api/types";
+import { Model, ModelSetting } from "../api/user/types";
 import { CheatpptStoreKey } from "./constant";
 import { useUser } from "./user";
 
