@@ -1,0 +1,86 @@
+.drop-container {
+  position: relative;
+  padding-top: .25rem;
+}
+
+.drop-menu {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 5px;
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+
+  align-items: center;
+  gap: .75rem;
+  border-radius: .375rem;
+  border: none;
+  padding: .75rem;
+  font-size: 14px;
+  line-height: .75rem;
+  transition-duration: .2s;
+
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
+
+  background-color: white;
+  text-transform: none;
+
+  &:hover,
+  &:active {
+    opacity: 0.2;
+  }
+}
+
+.drop-nav {
+  position: absolute;
+  border: none;
+  bottom: 100%;
+  overflow: hidden;
+  padding-bottom: .375rem;
+  padding-top: .375rem;
+  border-radius: .375rem;
+
+  font-size: 14px;
+  line-height: .75rem;
+  transition: visibility 0s, opacity 0.5s linear;
+
+  width: 100%;
+  outline-offset: 2px;
+  outline: 2px solid transparent;
+
+  background-color: whitesmoke;
+
+//  z-index: 20;
+  opacity: 1;
+}
+
+.drop-line {
+  height: 1px;
+  margin-top: .375rem;
+  margin-bottom: .375rem;
+
+  background-color: #afb3ba;
+}
+
+.drop-content {
+  display: flex;
+
+  line-height: 1.25rem;
+  padding: .75rem;
+  gap: .75rem;
+  align-items: center;
+  opacity: 1;
+  transition: visibility 0s, opacity 0.5s linear;
+
+  cursor: pointer;
+
+  &:hover,
+  &:active {
+    background-color: white;
+  }
+}

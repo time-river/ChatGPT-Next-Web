@@ -24,6 +24,7 @@ import {
 import { SideBar } from "./sidebar";
 
 import { useAppConfig } from "@/customize/store/config";
+import { Plan } from "./plan";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -131,6 +132,8 @@ function Screen() {
           <Route path={Path.Settings} element={<Settings />} />
         </Routes>
       </div>
+
+      <Plan />
     </div>
   );
 }

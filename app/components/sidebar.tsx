@@ -27,6 +27,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showToast } from "./ui-lib";
+import { Profile } from "./profile";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -201,6 +202,8 @@ export function SideBar(props: { className?: string }) {
           />
         </div>
       </div>
+
+      <Profile />
 
       <div
         className={styles["sidebar-drag"]}
