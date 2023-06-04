@@ -122,6 +122,7 @@ export default function SignUp() {
       return;
     }
 
+    setSended(false);
     setCanSend(false);
 
     const data: CodeReq = {
