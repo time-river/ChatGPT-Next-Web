@@ -6,6 +6,7 @@ import { getLang, Lang } from "../locales";
 import { DEFAULT_TOPIC, ChatMessage } from "./chat";
 import { ModelConfig, useAppConfig } from "@/customize/store/config";
 import { StoreKey } from "../constant";
+import { useModels } from "@/customize/store/model";
 
 export type Mask = {
   id: number;
@@ -17,10 +18,40 @@ export type Mask = {
   modelConfig: ModelConfig;
   lang: Lang;
   builtin: boolean;
-
-  modelId: number;
-  isChatGPT: boolean;
 };
+
+export function isChatGPTModel(mask: Mask): boolean {
+  if (!mask.modelConfig.isChatGPT) {
+    return false;
+  } else {
+    return mask.modelConfig.isChatGPT;
+  }
+}
+
+export interface ModelExtConfig {
+  modelId: number;
+  modelName: string;
+  isChatGPT: boolean;
+}
+
+export function validModelExtConfig(mask: Mask): boolean {
+  const modelStore = useModels.getState();
+  const modelConfig = mask.modelConfig;
+
+  if (!modelConfig.modelId) {
+    return false;
+  }
+
+  return modelStore.validModel(modelConfig.modelId, modelConfig.model);
+}
+
+export function setModelExtConfig(mask: Mask, attr: ModelExtConfig) {
+  const modelConfig = mask.modelConfig;
+
+  modelConfig.modelId = attr.modelId;
+  modelConfig.model = attr.modelName;
+  modelConfig.isChatGPT = attr.isChatGPT;
+}
 
 export const DEFAULT_MASK_STATE = {
   masks: {} as Record<number, Mask>,
@@ -49,9 +80,6 @@ export const createEmptyMask = () =>
     modelConfig: { ...useAppConfig.getState().modelConfig },
     lang: getLang(),
     builtin: false,
-
-    modelId: -1, // the unique tag of the model
-    isChatGPT: false,
   } as Mask);
 
 export const useMaskStore = create<MaskStore>()(

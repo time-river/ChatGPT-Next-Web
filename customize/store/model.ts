@@ -14,6 +14,7 @@ export interface ModelStore {
   refresh: (data: ModelSetting) => void;
   setDefault: (_: number) => void;
   getModelById: (_: number) => Model;
+  validModel: (id: number, modelName: string) => boolean;
 };
 
 export const useModels = create<ModelStore>()(
@@ -45,7 +46,19 @@ export const useModels = create<ModelStore>()(
         }
 
         return models[get().default];
-      }
+      },
+      validModel: (id: number, modelName: string): boolean => {
+        const models = get().models;
+
+        for (let i = 0; i < models.length; i++) {
+          const model = models[i];
+
+          if (model.id === id && model.modelName === modelName) {
+            return true;
+          }
+        }
+        return false
+      },
     }),
     {
       name: CheatpptStoreKey.Models,

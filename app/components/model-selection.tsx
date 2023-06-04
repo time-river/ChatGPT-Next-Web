@@ -12,11 +12,14 @@ import {
   useAppConfig,
 } from "@/customize/store/config";
 import "./model-selection.model.scss";
+import { ModelExtConfig, setModelExtConfig } from "../store/mask";
 
 export function ModelSelection() {
   const session = useChatStore().currentSession();
   const models = useModels().models;
-  const [current, setCurrent] = React.useState(session.mask.modelId);
+  const [current, setCurrent] = React.useState(
+    session.mask.modelConfig.modelId,
+  );
 
   /* don't show selection if the talk has began */
   if (session.messages.length > 1) {
@@ -34,10 +37,13 @@ export function ModelSelection() {
     console.debug("switch model to: ", model);
 
     useChatStore.getState().updateCurrentSession((session) => {
-      session.mask.modelId = idx;
-      session.mask.isChatGPT = model.isChatGPT;
+      const attr: ModelExtConfig = {
+        modelId: idx,
+        modelName: model.modelName,
+        isChatGPT: model.isChatGPT,
+      };
 
-      session.mask.modelConfig.model = model.modelName;
+      setModelExtConfig(session.mask, attr);
     });
   }
 

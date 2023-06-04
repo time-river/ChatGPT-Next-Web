@@ -43,7 +43,19 @@ export const DEFAULT_CONFIG = {
   modelConfig: DEFAULT_MODEL_CONFIG, // only used in OpenAI API mode
 };
 
-export type ModelConfig = typeof DEFAULT_MODEL_CONFIG;
+export interface ModelConfig {
+  model: string;
+  temperature: number;
+  max_tokens: number;
+  presence_penalty: number;
+  sendMemory: boolean;
+  historyMessageCount: number;
+  compressMessageLengthThreshold: number;
+
+  isChatGPT?: boolean;
+  modelId?: number;
+}
+
 export type ChatConfig = typeof DEFAULT_CONFIG;
 export type ModelType = string;
 

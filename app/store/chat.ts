@@ -7,7 +7,14 @@ import Locale from "../locales";
 import { showToast } from "../components/ui-lib";
 
 import { ModelType } from "@/customize/store/config";
-import { createEmptyMask, Mask } from "./mask";
+import {
+  createEmptyMask,
+  isChatGPTModel,
+  Mask,
+  ModelExtConfig,
+  setModelExtConfig,
+  validModelExtConfig,
+} from "./mask";
 import { StoreKey } from "../constant";
 import { api, RequestMessage } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
@@ -172,14 +179,18 @@ export const useChatStore = create<ChatStore>()(
         }
 
         /* no specify the model */
-        if (session.mask.modelId == -1) {
+        if (!validModelExtConfig(session.mask)) {
           const modelStore = useModels.getState();
           const current = modelStore.default;
           const model = modelStore.models[current];
 
-          session.mask.modelId = current;
-          session.mask.modelConfig.model = model.modelName;
-          session.mask.isChatGPT = model.isChatGPT;
+          const attr: ModelExtConfig = {
+            modelId: modelStore.default,
+            modelName: model.modelName,
+            isChatGPT: model.isChatGPT,
+          };
+
+          setModelExtConfig(session.mask, attr);
         }
 
         set((state) => ({
@@ -260,7 +271,7 @@ export const useChatStore = create<ChatStore>()(
       async onUserInput(content) {
         const session = get().currentSession();
 
-        if (session.mask.isChatGPT) {
+        if (isChatGPTModel(session.mask)) {
           return chatgpt.requestChatStream(content, session);
         }
 
