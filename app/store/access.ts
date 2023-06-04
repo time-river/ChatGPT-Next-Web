@@ -21,7 +21,7 @@ export interface AccessControlStore {
   fetch: () => void;
 }
 
-let fetchState = 0; // 0 not fetch, 1 fetching, 2 done
+let fetchState = 2; // 0 not fetch, 1 fetching, 2 done
 
 export const useAccessStore = create<AccessControlStore>()(
   persist(

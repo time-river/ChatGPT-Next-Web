@@ -1,3 +1,4 @@
+import { useUser } from "@/customize/store/user";
 import { ACCESS_CODE_PREFIX } from "../constant";
 import { ChatMessage, ModelConfig, ModelType, useAccessStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
@@ -94,11 +95,15 @@ export class ClientApi {
 export const api = new ClientApi();
 
 export function getHeaders() {
+  const token = useUser.getState().token;
   const accessStore = useAccessStore.getState();
   let headers: Record<string, string> = {
     "Content-Type": "application/json",
     "x-requested-with": "XMLHttpRequest",
   };
+
+  headers.Authorization = `Bearer ${token.trim()}`;
+  return headers;
 
   const makeBearer = (token: string) => `Bearer ${token.trim()}`;
   const validString = (x: string) => x && x.length > 0;
