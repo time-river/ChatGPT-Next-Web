@@ -5,9 +5,10 @@ import * as React from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import ReCAPTCHA from "react-google-recaptcha";
-import Backdrop from "@mui/material/Backdrop";
 import Grid from "@mui/material/Grid";
+
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 import { t } from "@/customize/helper";
 import globalCfg from "@/global.config";
@@ -15,21 +16,23 @@ import { SubmitHandle, VerificationProps } from "./types";
 import { fetchCode } from "@/customize/api/user/user";
 import { CodeReq, CodeRsp, Response } from "@/customize/api/user/types";
 
-const captchaRef = React.createRef<ReCAPTCHA>();
-
 const VerificationForm = (
   props: VerificationProps,
   ref: React.Ref<SubmitHandle>,
 ) => {
+  const captchaRef = React.useRef<TurnstileInstance>();
+  const [showCaptcha, setShowCaptcha] = React.useState(false);
+  const [captchaDone, setCaptchaDone] = React.useState(false);
+  const [captchaToken, setCaptchaToken] = React.useState("");
+
   const [seconds, setSeconds] = React.useState(-1);
   const [sended, setSended] = React.useState(false);
   const [canSend, setCanSend] = React.useState(true);
-  const [open, setOpen] = React.useState(false);
   const [sendText, setSendText] = React.useState(t("Verify"));
   const [usernameFocus, setUsernameFocus] = React.useState(false);
   const [codeFocus, setCodeFocus] = React.useState(false);
 
-  const SITE_KEY = globalCfg.recaptchaKey;
+  const SITE_KEY = globalCfg.captchaKey;
   const RESEND_TIME = 120;
 
   React.useEffect(() => {
@@ -45,6 +48,22 @@ const VerificationForm = (
     }
     return () => clearInterval(intervalId);
   }, [seconds]);
+
+  const captchaOnSuccess = (value: string) => {
+    setCaptchaDone(true);
+    setCaptchaToken(value);
+    props.setTipStatus(false);
+  };
+
+  const captchaOnBeforeInteractive = () => {
+    setShowCaptcha(true);
+  };
+
+  const captchaOnExpire = () => {
+    setCaptchaDone(false);
+    captchaRef.current?.reset();
+    setShowCaptcha(true);
+  };
 
   const handleUsernameFocus = () => {
     setUsernameFocus(true);
@@ -100,32 +119,12 @@ const VerificationForm = (
     },
   }));
 
-  const handleOpen = () => {
-    const usernameElem: HTMLInputElement = document.getElementById(
-      "username",
-    ) as HTMLInputElement;
-    const username = usernameElem.value.trim();
-
-    if (username === "") {
-      return;
-    }
-
-    // reset captcah every challenge
-    captchaRef.current?.reset();
-    setOpen(true);
-  };
-
-  const codeOnError = () => {
-    props.setTipType("error");
-    props.setTipText(t("UnknowError"));
-    props.setTipStatus(true);
-  };
-
-  const handleRequestCode = (value: string | null) => {
-    if (value == null) {
+  const handleRequestCode = () => {
+    if (!captchaDone) {
+      setShowCaptcha(true);
+      captchaRef.current?.execute();
       props.setTipType("error");
-      props.setTipText(t("UnknowError"));
-      setOpen(false);
+      props.setTipText(t("InputChallenge"));
       props.setTipStatus(true);
       return;
     }
@@ -140,7 +139,7 @@ const VerificationForm = (
     const data: CodeReq = {
       type: "reset",
       username: username,
-      code: value,
+      code: captchaToken,
     };
 
     fetchCode(
@@ -152,7 +151,6 @@ const VerificationForm = (
         setSended(true);
 
         setTimeout(() => {
-          setOpen(false);
           props.setTipStatus(true);
         }, 1000);
       },
@@ -163,7 +161,6 @@ const VerificationForm = (
         props.setTipText(error.toString());
 
         setTimeout(() => {
-          setOpen(false);
           props.setTipStatus(true);
         }, 1000);
       },
@@ -208,7 +205,7 @@ const VerificationForm = (
             fullWidth
             variant="contained"
             size="small"
-            onClick={handleOpen}
+            onClick={handleRequestCode}
             sx={{
               mt: 0,
               mb: 0,
@@ -220,26 +217,17 @@ const VerificationForm = (
           >
             <small>{seconds <= 0 ? `${sendText}` : `${seconds}s`}</small>
           </Button>
-          <Backdrop
-            sx={{
-              color: "#fff",
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-            }}
-            open={open}
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            <ReCAPTCHA
-              style={{ display: "inline-block" }}
-              sitekey={SITE_KEY}
-              onChange={handleRequestCode}
-              type="image"
-              theme="light"
-              ref={captchaRef}
-              onErrored={codeOnError}
-            />
-          </Backdrop>
+        </Grid>
+        <Grid item xs={3}>
+          <Turnstile
+            style={{ display: showCaptcha ? "block" : "none" }}
+            ref={captchaRef}
+            siteKey={SITE_KEY}
+            onBeforeInteractive={captchaOnBeforeInteractive}
+            onSuccess={captchaOnSuccess}
+            onExpire={captchaOnExpire}
+            options={{ appearance: "always" }}
+          />
         </Grid>
       </Grid>
     </React.Fragment>

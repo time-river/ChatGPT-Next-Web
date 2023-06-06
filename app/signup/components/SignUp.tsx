@@ -19,7 +19,8 @@ import Typography from "@mui/material/Typography";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import ReCAPTCHA from "react-google-recaptcha";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
@@ -32,11 +33,9 @@ import {
   Response,
   SignUpReq,
   SignUpRsp,
-  Status,
 } from "@/customize/api/user/types";
 
 const theme = createTheme();
-const captchaRef = React.createRef<ReCAPTCHA>();
 
 export default function SignUp() {
   const router = useRouter();
@@ -45,7 +44,6 @@ export default function SignUp() {
   const [canSend, setCanSend] = React.useState(true);
   const [sended, setSended] = React.useState(false);
   const [sendText, setSendText] = React.useState(t("Verify"));
-  const [open, setOpen] = React.useState(false);
   const [tipStatus, setTipStatus] = React.useState(false);
   const [tipText, setTipText] = React.useState<string | null>("");
   const [tipType, setTipType] = React.useState<AlertColor>("success");
@@ -68,11 +66,16 @@ export default function SignUp() {
   const [reenteredPasswdHelperText, setReenteredPasswdHelperText] =
     React.useState<string | null>("");
 
+  const captchaRef = React.useRef<TurnstileInstance>();
+  const [showCaptcha, setShowCaptcha] = React.useState(false);
+  const [captchaDone, setCaptchaDone] = React.useState(false);
+  const [captchaToken, setCaptchaToken] = React.useState("");
+
   const usenamePattern = globalCfg.user.usenamePattern;
   const emailPattern = globalCfg.user.emailPattern;
   const passwdPattern = globalCfg.user.passwdPattern;
 
-  const SITE_KEY = globalCfg.recaptchaKey;
+  const SITE_KEY = globalCfg.captchaKey;
   const RESEND_TIME = 120;
   const TIPES_TIME = 5000;
 
@@ -92,16 +95,6 @@ export default function SignUp() {
     return () => clearInterval(intervalId);
   }, [seconds]);
 
-  const handleOpen = () => {
-    if (usernameText === "" || emailText === "") {
-      return;
-    }
-
-    // reset captcah every challenge
-    captchaRef.current?.reset();
-    setOpen(true);
-  };
-
   const handleTipClose = (
     event: Event | React.SyntheticEvent<any, Event>,
     reason: SnackbarCloseReason,
@@ -113,11 +106,29 @@ export default function SignUp() {
     setTipStatus(false);
   };
 
-  const handleRequestCode = (value: string | null) => {
-    if (value == null) {
+  const captchaOnBeforeInteractive = () => {
+    setShowCaptcha(true);
+  };
+
+  const captchaOnSuccess = (value: string) => {
+    setCaptchaDone(true);
+    setCaptchaToken(value);
+    setTipStatus(false);
+  };
+
+  const captchaOnExpire = () => {
+    setCaptchaDone(false);
+    captchaRef.current?.reset();
+    setShowCaptcha(true);
+  };
+
+  const handleRequestCode = () => {
+    if (!captchaDone) {
+      // need challenge
+      setShowCaptcha(true);
+      captchaRef.current?.execute();
       setTipType("error");
-      setTipText(t("UnknowError"));
-      setOpen(false);
+      setTipText(t("InputChallenge"));
       setTipStatus(true);
       return;
     }
@@ -129,7 +140,7 @@ export default function SignUp() {
       type: "signup",
       username: usernameText,
       email: emailText,
-      code: value,
+      code: captchaToken,
     };
 
     fetchCode(
@@ -141,7 +152,6 @@ export default function SignUp() {
         setTipText(response.message);
 
         setTimeout(() => {
-          setOpen(false);
           setTipStatus(true);
         }, 1000);
       },
@@ -152,7 +162,6 @@ export default function SignUp() {
         setTipText(error.toString());
 
         setTimeout(() => {
-          setOpen(false);
           setTipStatus(true);
         }, 1000);
       },
@@ -317,7 +326,6 @@ export default function SignUp() {
                   label={t("Username")}
                   name="username"
                   onChange={usernameOnChange}
-                  inputProps={{ pattern: usenamePattern }}
                   helperText={usernameHelperText}
                   autoFocus
                 />
@@ -330,7 +338,6 @@ export default function SignUp() {
                   label={t("Email")}
                   name="email"
                   onChange={emailOnChange}
-                  inputProps={{ pattern: emailPattern }}
                   helperText={emailHelperText}
                 />
               </Grid>
@@ -385,7 +392,7 @@ export default function SignUp() {
                   fullWidth
                   variant="contained"
                   size="small"
-                  onClick={handleOpen}
+                  onClick={handleRequestCode}
                   sx={{
                     mt: 0,
                     mb: 0,
@@ -397,26 +404,17 @@ export default function SignUp() {
                 >
                   <small>{seconds <= 0 ? `${sendText}` : `${seconds}s`}</small>
                 </Button>
-                <Backdrop
-                  sx={{
-                    color: "#fff",
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                  }}
-                  open={open}
-                  onClick={() => {
-                    setOpen(false);
-                  }}
-                >
-                  <ReCAPTCHA
-                    style={{ display: "inline-block" }}
-                    sitekey={SITE_KEY}
-                    onChange={handleRequestCode}
-                    type="image"
-                    theme="light"
-                    ref={captchaRef}
-                    onErrored={codeOnError}
-                  />
-                </Backdrop>
+              </Grid>
+              <Grid item xs={12}>
+                <Turnstile
+                  style={{ display: showCaptcha ? "block" : "none" }}
+                  ref={captchaRef}
+                  siteKey={SITE_KEY}
+                  onBeforeInteractive={captchaOnBeforeInteractive}
+                  onSuccess={captchaOnSuccess}
+                  onExpire={captchaOnExpire}
+                  options={{ appearance: "always" }}
+                />
               </Grid>
             </Grid>
             <Button
@@ -433,6 +431,11 @@ export default function SignUp() {
               {t("SignUp")}
             </Button>
             <Grid container justifyContent="flex-end">
+              <Grid item xs>
+                <Link href="/reset" variant="body2">
+                  {t("ForgetPasswd")}
+                </Link>
+              </Grid>
               <Grid item>
                 <Link href="/signin" variant="body2">
                   {t("SignInIfReg")}

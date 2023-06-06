@@ -34,6 +34,7 @@ const Locale = {
     UnknowError: "未知错误，请刷新页面重试",
     ResetSuccess: "重置密码成功",
     ServerError: "服务端异常",
+    InputChallenge: "请输入验证码",
   },
 }
 

@@ -5,7 +5,6 @@ import * as React from "react";
 // https://mui.com/material-ui/guides/minimizing-bundle-size/
 import Avatar from "@mui/material/Avatar";
 import { AlertColor } from "@mui/material/Alert";
-import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -20,7 +19,8 @@ import Typography from "@mui/material/Typography";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-import ReCAPTCHA from "react-google-recaptcha";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 import Copyright from "@/customize/components/Copyright";
 import Alert from "@/customize/components/Alert";
@@ -32,18 +32,19 @@ import { useUser } from "@/customize/store/user";
 import { useModels } from "@/customize/store/model";
 
 const theme = createTheme();
-const captchaRef = React.createRef<ReCAPTCHA>();
 
 export default function SignIn() {
+  const captchaRef = React.useRef<TurnstileInstance>();
+  const [showCaptcha, setShowCaptcha] = React.useState(false);
+  const [captchaDone, setCaptchaDone] = React.useState(false);
+  const [captchaToken, setCaptchaToken] = React.useState("");
+
   const [logined, setLogined] = React.useState(false);
-  const [open, setOpen] = React.useState(false);
   const [tipStatus, setTipStatus] = React.useState(false);
   const [tipText, setTipText] = React.useState<string | null>("");
   const [tipType, setTipType] = React.useState<AlertColor>("success");
-  const [username, setUsername] = React.useState<string>("");
-  const [passwd, setPasswd] = React.useState<string>("");
 
-  const SITE_KEY = globalCfg.recaptchaKey;
+  const SITE_KEY = globalCfg.captchaKey;
   const TIPES_TIME = 5000;
 
   const handleTipClose = (
@@ -57,22 +58,24 @@ export default function SignIn() {
     setTipStatus(false);
   };
 
-  const requestSignIn = (value: string | null) => {
-    if (value == null) {
-      setTipType("error");
-      setTipText(t("UnknowError"));
-      setOpen(false);
-      setTipStatus(true);
-      return;
-    }
+  const captchaOnSuccess = (value: string) => {
+    setCaptchaDone(true);
+    setCaptchaToken(value);
+    setTipStatus(false);
+  };
 
+  const captchaOnBeforeInteractive = () => {
+    setShowCaptcha(true);
+  };
+
+  const captchaOnExpire = () => {
+    setCaptchaDone(false);
+    captchaRef.current?.reset();
+    setShowCaptcha(true);
+  };
+
+  const requestSignIn = (data: SignInReq) => {
     setLogined(true);
-
-    const data: SignInReq = {
-      username: username,
-      password: passwd,
-      code: value,
-    };
 
     fetchSignIn(
       data,
@@ -89,7 +92,6 @@ export default function SignIn() {
         setTipText(response.message);
 
         setTimeout(() => {
-          setOpen(false);
           setTipStatus(true);
 
           // simulate a mouse click
@@ -102,7 +104,6 @@ export default function SignIn() {
         setTipText(error.toString());
 
         setTimeout(() => {
-          setOpen(false);
           setTipStatus(true);
           setLogined(false);
         }, 1000);
@@ -126,17 +127,22 @@ export default function SignIn() {
       return;
     }
 
-    setUsername(username as string);
-    setPasswd(passwd as string);
+    if (!captchaDone) {
+      // need challenge
+      setShowCaptcha(true);
+      captchaRef.current?.execute();
+      setTipType("error");
+      setTipText(t("InputChallenge"));
+      setTipStatus(true);
+      return;
+    }
 
-    captchaRef.current?.reset();
-    setOpen(true);
-  };
-
-  const codeOnError = () => {
-    setTipType("error");
-    setTipText(t("UnknowError"));
-    setTipStatus(true);
+    const data: SignInReq = {
+      username: username as string,
+      password: passwd as string,
+      code: captchaToken,
+    };
+    requestSignIn(data);
   };
 
   return (
@@ -190,23 +196,17 @@ export default function SignIn() {
               control={<Checkbox value="remember" color="primary" />}
               label={t("Remember")}
             />
-            <Backdrop
-              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-              open={open}
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              <ReCAPTCHA
-                style={{ display: "inline-block" }}
-                sitekey={SITE_KEY}
-                onChange={requestSignIn}
-                type="image"
-                theme="light"
-                ref={captchaRef}
-                onErrored={codeOnError}
-              />
-            </Backdrop>
+
+            <Turnstile
+              style={{ display: showCaptcha ? "block" : "none" }}
+              ref={captchaRef}
+              siteKey={SITE_KEY}
+              onBeforeInteractive={captchaOnBeforeInteractive}
+              onSuccess={captchaOnSuccess}
+              onExpire={captchaOnExpire}
+              options={{ appearance: "always" }}
+            />
+
             <Button
               type="submit"
               fullWidth
