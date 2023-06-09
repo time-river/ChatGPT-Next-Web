@@ -1,3 +1,4 @@
+import { sessionKey } from "@/customize/api/user/types";
 import { useUser } from "@/customize/store/user";
 import { ACCESS_CODE_PREFIX } from "../constant";
 import { ChatMessage, ModelConfig, ModelType, useAccessStore } from "../store";
@@ -103,6 +104,11 @@ export function getHeaders() {
   };
 
   headers.Authorization = `Bearer ${token.trim()}`;
+  const session = sessionStorage.getItem(sessionKey);
+  if (!!session) {
+    headers[sessionKey] = session;
+  }
+
   return headers;
 
   const makeBearer = (token: string) => `Bearer ${token.trim()}`;

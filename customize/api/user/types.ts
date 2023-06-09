@@ -11,6 +11,8 @@ export enum Status {
   FAILURE = "failure",
 }
 
+export const sessionKey = "sessionId"
+
 export interface Response<T = any> {
   status: Status,
   data?: T,
@@ -73,3 +75,6 @@ export interface ResetReq {
 
 export interface ResetRsp { }
 
+export interface PingRsp {
+  sessionId: string;
+}

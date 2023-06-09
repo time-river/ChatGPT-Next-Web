@@ -1,3 +1,8 @@
+"use client";
+
+import React from "react";
+import { fetchPing } from "@/customize/api/user/user";
+
 import { Analytics } from "@vercel/analytics/react";
 
 import { Home } from "./components/home";
@@ -11,7 +16,12 @@ import "./styles/globals.scss";
 import "./styles/markdown.scss";
 import "./styles/highlight.scss";
 
-export default async function App() {
+export default function App() {
+  React.useEffect(() => {
+    // request session when opening chat
+    fetchPing();
+  }, []);
+
   return (
     <>
       <Home />

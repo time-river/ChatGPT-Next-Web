@@ -4,7 +4,7 @@ import axios, { type AxiosResponse, Method, AxiosHeaders } from 'axios';
 
 import globalConfig from '@/global.config';
 import { useUser } from '../../store/user';
-import { HttpOption, Response, Status } from "./types";
+import { HttpOption, Response, sessionKey, Status } from "./types";
 
 const request = axios.create({
     baseURL: globalConfig.apiBaseURL,
@@ -23,16 +23,25 @@ request.interceptors.request.use(
     const match = regex.exec(url)
     const pathname = match ? match[2] : ""
 
+    const { getState } = useUser
+    const token = getState().token
+
+    // no signin
+    if (token.length === 0) {
+      return config
+    }
+
     // api url must be start with `/api`
     if (pathname.startsWith("/api") && !(pathname in whitePaths)) {
       if (!config.headers) {
         config.headers = new AxiosHeaders();
       }
-
-      const { getState } = useUser
-      const token = getState().token
   
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.setAuthorization(`Bearer ${token}`, true);
+      const session = sessionStorage.getItem(sessionKey);
+      if (!!session) {
+        config.headers.set(sessionKey, session);
+      }
     }
 
     console.debug(config.data)

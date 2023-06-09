@@ -1,12 +1,13 @@
 "use client;"
 
-import { post } from "./common"
+import { get, post } from "./common"
 import {
   Response, Status,
   ResetReq, ResetRsp,
   SignInReq, SignInRsp,
   SignUpReq, SignUpRsp,
-  CodeReq, CodeRsp,
+  CodeReq, CodeRsp, PingRsp,
+  sessionKey,
 } from "./types"
 
 enum ApiURL {
@@ -14,6 +15,7 @@ enum ApiURL {
   signin = "/api/v1/user/signin",
   code = "/api/v1/user/code",
   reset  = "/api/v1/user/reset",
+  ping = "/api/v1/user/ping",
 }
 
 export function fetchSignUp(data: SignUpReq,
@@ -67,4 +69,24 @@ export function fetchReset(data: ResetReq,
   post<ResetRsp>(options)
     .then(onfulfilled)
     .catch(onrejected)
+}
+
+export function fetchPing() {
+  const options = {
+    url: ApiURL.ping,
+  };
+
+  get<PingRsp>(options)
+    .then((response: Response<PingRsp>) => {
+      const data = response.data;
+
+      if (!data) {
+        new Error("Server ERROR");
+        return;
+      }
+
+      sessionStorage.setItem(sessionKey, data.sessionId)
+    }).catch((error: any) => {
+      console.log("PING ERROR: ", error);
+    })
 }
