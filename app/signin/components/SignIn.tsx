@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
 // https://mui.com/material-ui/guides/minimizing-bundle-size/
 import Avatar from "@mui/material/Avatar";
@@ -34,6 +35,8 @@ import { useModels } from "@/customize/store/model";
 const theme = createTheme();
 
 export default function SignIn() {
+  const router = useRouter();
+
   const captchaRef = React.useRef<TurnstileInstance>();
   const [showCaptcha, setShowCaptcha] = React.useState(false);
   const [captchaDone, setCaptchaDone] = React.useState(false);
@@ -96,7 +99,7 @@ export default function SignIn() {
 
           // simulate a mouse click
           // force refresh page to avoid broken css style
-          window.location.href = "/";
+          router.back();
         }, 1000);
       },
       (error: any) => {

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { ErrorBoundary } from "../components/error";
 import Reset from "./components";
 
 export default function App() {
@@ -12,5 +11,5 @@ export default function App() {
     setJsLoaded(true);
   }, []);
 
-  return <ErrorBoundary>{jsLoaded && <Reset />}</ErrorBoundary>;
+  return <>{jsLoaded && <Reset />}</>;
 }

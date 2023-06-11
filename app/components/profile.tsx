@@ -5,11 +5,14 @@ import styles from "./profile.module.scss";
 
 import { useUser } from "@/customize/store/user";
 import { useStateStore } from "@/customize/store/state";
+import { useRouter } from "next/navigation";
 
-function logOutClick() {
+function SignOutClick() {
+  const router = useRouter();
   const userStore = useUser.getState();
 
   userStore.signOut();
+  router.push("/");
 }
 
 export function Profile() {
@@ -72,8 +75,8 @@ export function Profile() {
 
             <div className={styles["drop-line"]} />
 
-            <a className={styles["drop-content"]} onClick={logOutClick}>
-              Log out
+            <a className={styles["drop-content"]} onClick={SignOutClick}>
+              Sign out
             </a>
           </nav>
         </div>
