@@ -1,3 +1,4 @@
+import { ProviderName } from "@/app/client/api";
 import { AxiosHeaders } from "axios"
 
 export interface HttpOption {
@@ -64,7 +65,7 @@ export interface Model {
   id: number;
   displayName: string;
   modelName: string;
-  provider: string;
+  provider: ProviderName;
   inputCoins: number;
   outputCoins: number;
   activated: boolean;
@@ -75,4 +76,5 @@ export interface Model {
 export interface PingRsp {
   sessionId: string;
   models: Model[];
+  defaultModel: number;
 }

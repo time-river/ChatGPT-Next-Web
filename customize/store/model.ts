@@ -1,15 +1,17 @@
 "user client";
 
+import { useAppConfig } from "@/app/store";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { Model } from "../api/user/types";
+import { Model, PingRsp } from "../api/user/types";
 import { CheatpptStoreKey } from "./constant";
 
 export interface ModelStore {
+  default: number,
   models: Model[];
 
-  refresh: (data: Model[]) => void;
+  refresh: (data: PingRsp) => void;
   getModelById: (_: number) => Model;
   validModel: (id: number, modelName: string) => boolean;
 };
@@ -17,10 +19,14 @@ export interface ModelStore {
 export const useModels = create<ModelStore>()(
   persist(
     (set, get) => ({
+      default: -1,
       models: [],
 
-      refresh: (models: Model[]) => {
-        set(() => ({models}));
+      refresh: (data: PingRsp) => {
+        set(() => ({
+          models: data.models,
+          default: data.defaultModel
+        }));
       },
       getModelById: (id: number): Model => {
         const models = get().models;
@@ -31,7 +37,7 @@ export const useModels = create<ModelStore>()(
           }
         }
 
-        return models[0];
+        return models[get().default];
       },
       validModel: (id: number, modelName: string): boolean => {
         const models = get().models;

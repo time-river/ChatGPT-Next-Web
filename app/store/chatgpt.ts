@@ -79,13 +79,18 @@ export async function requestChatStream(content: string) {
   chatGPTApi.llm.chat({
     messages: [reqMsg],
     config: { ...config, stream: true },
-    onUpdate(message) {
+    onUpdate(message, chunk: any) {
+      const options = chunk as ConversationOptions;
+
       botMessage.streaming = true;
       if (message) {
         botMessage.content = message;
+        botMessage.messageId = options.messageId;
+        botMessage.parentMessageId = options.parentMessageId;
       }
       useChatStore.getState().updateCurrentSession((session) => {
         session.messages = session.messages.concat();
+        session.conversationId = options.conversationId;
       });
     },
     onFinish(message) {

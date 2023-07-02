@@ -1,10 +1,11 @@
 import { getClientConfig } from "../config/client";
 import { ACCESS_CODE_PREFIX } from "../constant";
-import { ChatMessage, ModelType, useAccessStore } from "../store";
+import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 
 import { sessionKey } from "@/customize/api/user/types";
 import { ChatGPTChatApi } from "./platforms/chatgpt";
+import { useModels } from "@/customize/store/model";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -15,6 +16,8 @@ export type ChatModel = ModelType;
 export interface RequestMessage {
   role: MessageRole;
   content: string;
+
+  messageId?: string;
 }
 
 export interface LLMConfig {
@@ -56,6 +59,23 @@ export abstract class LLMApi {
 }
 
 type ProviderName = "openai" | "azure" | "claude" | "palm" | "chatGPT";
+
+export function needShowConfig(provider: string): boolean {
+  if (provider === "openai") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export function canSwitchModel(provider: string): boolean {
+  if (provider === "openai") {
+    return true;
+  }
+
+  const currentSession = useChatStore.getState().currentSession();
+  return currentSession.messages.length == 0;
+}
 
 interface Model {
   name: string;

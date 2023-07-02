@@ -3,6 +3,9 @@ import { persist } from "zustand/middleware";
 import { getClientConfig } from "../config/client";
 import { DEFAULT_INPUT_TEMPLATE, StoreKey } from "../constant";
 
+import { useModels } from "@/customize/store/model";
+import { ProviderName } from "../client/api";
+
 export enum SubmitKey {
   Enter = "Enter",
   CtrlEnter = "Ctrl + Enter",
@@ -17,7 +20,7 @@ export enum Theme {
   Light = "light",
 }
 
-export const DEFAULT_CONFIG = {
+const _DEFAULT_CONFIG = {
   submitKey: SubmitKey.CtrlEnter as SubmitKey,
   avatar: "1f603",
   fontSize: 14,
@@ -40,10 +43,14 @@ export const DEFAULT_CONFIG = {
     historyMessageCount: 4,
     compressMessageLengthThreshold: 1000,
     template: DEFAULT_INPUT_TEMPLATE,
+
+    idx: 0, // model array index
+    displayName: "gpt-3.5-turbo",
+    provider: "openai" as ProviderName, // type: ProviderName
   },
 };
 
-export type ChatConfig = typeof DEFAULT_CONFIG;
+export type ChatConfig = typeof _DEFAULT_CONFIG;
 
 export type ChatConfigStore = ChatConfig & {
   reset: () => void;
@@ -121,7 +128,7 @@ export const ALL_MODELS = [
   },
 ] as const;
 
-export type ModelType = (typeof ALL_MODELS)[number]["name"];
+export type ModelType = string;
 
 export function limitNumber(
   x: number,
@@ -136,14 +143,15 @@ export function limitNumber(
   return Math.min(max, Math.max(min, x));
 }
 
-export function limitModel(name: string) {
-  return ALL_MODELS.some((m) => m.name === name && m.available)
-    ? name
-    : "gpt-3.5-turbo";
+export function limitModel(idx: number): string {
+  const { getState } = useModels;
+  const models = getState().models;
+
+  return models[idx].displayName;
 }
 
 export const ModalConfigValidator = {
-  model(x: string) {
+  model(x: number) {
     return limitModel(x) as ModelType;
   },
   max_tokens(x: number) {
@@ -163,10 +171,20 @@ export const ModalConfigValidator = {
 export const useAppConfig = create<ChatConfigStore>()(
   persist(
     (set, get) => ({
-      ...DEFAULT_CONFIG,
+      ..._DEFAULT_CONFIG,
 
       reset() {
-        set(() => ({ ...DEFAULT_CONFIG }));
+        var config: ChatConfig = _DEFAULT_CONFIG;
+        const modelStore = useModels.getState();
+        const idx = modelStore.default;
+        const model = modelStore.models[idx];
+
+        config.modelConfig.model = model.modelName;
+        config.modelConfig.idx = idx;
+        config.modelConfig.displayName = model.displayName;
+        config.modelConfig.provider = model.provider;
+
+        set(() => ({ ...config }));
       },
 
       update(updater) {
@@ -194,3 +212,5 @@ export const useAppConfig = create<ChatConfigStore>()(
     },
   ),
 );
+
+export const DEFAULT_CONFIG = useAppConfig.getState().modelConfig;

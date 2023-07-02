@@ -171,8 +171,16 @@ export function Home() {
       (response: Response<PingRsp>) => {
         const data: PingRsp = response.data!;
 
-        useModels.getState().refresh(data.models);
+        useModels.getState().refresh(data);
         sessionStorage.setItem(sessionKey, data.sessionId);
+
+        const model = data.models[data.defaultModel];
+        useAppConfig.getState().update((config) => {
+          config.modelConfig.idx = data.defaultModel;
+          config.modelConfig.model = model.modelName;
+          config.modelConfig.displayName = model.displayName;
+          config.modelConfig.provider = model.provider;
+        });
       },
       (error: any) => {
         console.debug("ping error happens: ", error);

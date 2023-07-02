@@ -1,176 +1,202 @@
-import { ALL_MODELS, ModalConfigValidator, ModelConfig } from "../store";
+import {
+  ALL_MODELS,
+  ModalConfigValidator,
+  ModelConfig,
+  useAppConfig,
+} from "../store";
 
 import Locale from "../locales";
 import { InputRange } from "./input-range";
 import { ListItem, Select } from "./ui-lib";
+import { useModels } from "@/customize/store/model";
+import { useState } from "react";
+import { needShowConfig } from "../client/api";
 
 export function ModelConfigList(props: {
   modelConfig: ModelConfig;
   updateConfig: (updater: (config: ModelConfig) => void) => void;
 }) {
+  // modelConfig is from `useAppConfig`
+  const models = useModels.getState().models;
+  const show = needShowConfig(props.modelConfig.provider);
+  const [showConfig, setShowConfig] = useState(show);
+
   return (
     <>
       <ListItem title={Locale.Settings.Model}>
         <Select
-          value={props.modelConfig.model}
+          value={props.modelConfig.idx}
           onChange={(e) => {
-            props.updateConfig(
-              (config) =>
-                (config.model = ModalConfigValidator.model(
-                  e.currentTarget.value,
-                )),
-            );
+            const idx = Number(e.currentTarget.value);
+            const model = models[idx];
+
+            setShowConfig(needShowConfig(model.provider));
+
+            props.updateConfig((config) => {
+              config.model = model.modelName;
+
+              // customize members
+              config.idx = idx;
+              config.displayName = model.displayName;
+              config.provider = model.provider;
+            });
           }}
         >
-          {ALL_MODELS.map((v) => (
-            <option value={v.name} key={v.name} disabled={!v.available}>
-              {v.name}
+          {models.map((v, idx) => (
+            <option value={idx} key={v.id}>
+              {v.displayName}
             </option>
           ))}
         </Select>
       </ListItem>
-      <ListItem
-        title={Locale.Settings.Temperature.Title}
-        subTitle={Locale.Settings.Temperature.SubTitle}
-      >
-        <InputRange
-          value={props.modelConfig.temperature?.toFixed(1)}
-          min="0"
-          max="1" // lets limit it to 0-1
-          step="0.1"
-          onChange={(e) => {
-            props.updateConfig(
-              (config) =>
-                (config.temperature = ModalConfigValidator.temperature(
-                  e.currentTarget.valueAsNumber,
-                )),
-            );
-          }}
-        ></InputRange>
-      </ListItem>
-      <ListItem
-        title={Locale.Settings.MaxTokens.Title}
-        subTitle={Locale.Settings.MaxTokens.SubTitle}
-      >
-        <input
-          type="number"
-          min={100}
-          max={32000}
-          value={props.modelConfig.max_tokens}
-          onChange={(e) =>
-            props.updateConfig(
-              (config) =>
-                (config.max_tokens = ModalConfigValidator.max_tokens(
-                  e.currentTarget.valueAsNumber,
-                )),
-            )
-          }
-        ></input>
-      </ListItem>
-      <ListItem
-        title={Locale.Settings.PresencePenalty.Title}
-        subTitle={Locale.Settings.PresencePenalty.SubTitle}
-      >
-        <InputRange
-          value={props.modelConfig.presence_penalty?.toFixed(1)}
-          min="-2"
-          max="2"
-          step="0.1"
-          onChange={(e) => {
-            props.updateConfig(
-              (config) =>
-                (config.presence_penalty =
-                  ModalConfigValidator.presence_penalty(
-                    e.currentTarget.valueAsNumber,
-                  )),
-            );
-          }}
-        ></InputRange>
-      </ListItem>
 
-      <ListItem
-        title={Locale.Settings.FrequencyPenalty.Title}
-        subTitle={Locale.Settings.FrequencyPenalty.SubTitle}
-      >
-        <InputRange
-          value={props.modelConfig.frequency_penalty?.toFixed(1)}
-          min="-2"
-          max="2"
-          step="0.1"
-          onChange={(e) => {
-            props.updateConfig(
-              (config) =>
-                (config.frequency_penalty =
-                  ModalConfigValidator.frequency_penalty(
-                    e.currentTarget.valueAsNumber,
-                  )),
-            );
-          }}
-        ></InputRange>
-      </ListItem>
+      {showConfig && (
+        <>
+          <ListItem
+            title={Locale.Settings.Temperature.Title}
+            subTitle={Locale.Settings.Temperature.SubTitle}
+          >
+            <InputRange
+              value={props.modelConfig.temperature?.toFixed(1)}
+              min="0"
+              max="1" // lets limit it to 0-1
+              step="0.1"
+              onChange={(e) => {
+                props.updateConfig(
+                  (config) =>
+                    (config.temperature = ModalConfigValidator.temperature(
+                      e.currentTarget.valueAsNumber,
+                    )),
+                );
+              }}
+            ></InputRange>
+          </ListItem>
+          <ListItem
+            title={Locale.Settings.MaxTokens.Title}
+            subTitle={Locale.Settings.MaxTokens.SubTitle}
+          >
+            <input
+              type="number"
+              min={100}
+              max={32000}
+              value={props.modelConfig.max_tokens}
+              onChange={(e) =>
+                props.updateConfig(
+                  (config) =>
+                    (config.max_tokens = ModalConfigValidator.max_tokens(
+                      e.currentTarget.valueAsNumber,
+                    )),
+                )
+              }
+            ></input>
+          </ListItem>
+          <ListItem
+            title={Locale.Settings.PresencePenalty.Title}
+            subTitle={Locale.Settings.PresencePenalty.SubTitle}
+          >
+            <InputRange
+              value={props.modelConfig.presence_penalty?.toFixed(1)}
+              min="-2"
+              max="2"
+              step="0.1"
+              onChange={(e) => {
+                props.updateConfig(
+                  (config) =>
+                    (config.presence_penalty =
+                      ModalConfigValidator.presence_penalty(
+                        e.currentTarget.valueAsNumber,
+                      )),
+                );
+              }}
+            ></InputRange>
+          </ListItem>
 
-      <ListItem
-        title={Locale.Settings.InputTemplate.Title}
-        subTitle={Locale.Settings.InputTemplate.SubTitle}
-      >
-        <input
-          type="text"
-          value={props.modelConfig.template}
-          onChange={(e) =>
-            props.updateConfig(
-              (config) => (config.template = e.currentTarget.value),
-            )
-          }
-        ></input>
-      </ListItem>
+          <ListItem
+            title={Locale.Settings.FrequencyPenalty.Title}
+            subTitle={Locale.Settings.FrequencyPenalty.SubTitle}
+          >
+            <InputRange
+              value={props.modelConfig.frequency_penalty?.toFixed(1)}
+              min="-2"
+              max="2"
+              step="0.1"
+              onChange={(e) => {
+                props.updateConfig(
+                  (config) =>
+                    (config.frequency_penalty =
+                      ModalConfigValidator.frequency_penalty(
+                        e.currentTarget.valueAsNumber,
+                      )),
+                );
+              }}
+            ></InputRange>
+          </ListItem>
 
-      <ListItem
-        title={Locale.Settings.HistoryCount.Title}
-        subTitle={Locale.Settings.HistoryCount.SubTitle}
-      >
-        <InputRange
-          title={props.modelConfig.historyMessageCount.toString()}
-          value={props.modelConfig.historyMessageCount}
-          min="0"
-          max="32"
-          step="1"
-          onChange={(e) =>
-            props.updateConfig(
-              (config) => (config.historyMessageCount = e.target.valueAsNumber),
-            )
-          }
-        ></InputRange>
-      </ListItem>
+          <ListItem
+            title={Locale.Settings.InputTemplate.Title}
+            subTitle={Locale.Settings.InputTemplate.SubTitle}
+          >
+            <input
+              type="text"
+              value={props.modelConfig.template}
+              onChange={(e) =>
+                props.updateConfig(
+                  (config) => (config.template = e.currentTarget.value),
+                )
+              }
+            ></input>
+          </ListItem>
 
-      <ListItem
-        title={Locale.Settings.CompressThreshold.Title}
-        subTitle={Locale.Settings.CompressThreshold.SubTitle}
-      >
-        <input
-          type="number"
-          min={500}
-          max={4000}
-          value={props.modelConfig.compressMessageLengthThreshold}
-          onChange={(e) =>
-            props.updateConfig(
-              (config) =>
-                (config.compressMessageLengthThreshold =
-                  e.currentTarget.valueAsNumber),
-            )
-          }
-        ></input>
-      </ListItem>
-      <ListItem title={Locale.Memory.Title} subTitle={Locale.Memory.Send}>
-        <input
-          type="checkbox"
-          checked={props.modelConfig.sendMemory}
-          onChange={(e) =>
-            props.updateConfig(
-              (config) => (config.sendMemory = e.currentTarget.checked),
-            )
-          }
-        ></input>
-      </ListItem>
+          <ListItem
+            title={Locale.Settings.HistoryCount.Title}
+            subTitle={Locale.Settings.HistoryCount.SubTitle}
+          >
+            <InputRange
+              title={props.modelConfig.historyMessageCount.toString()}
+              value={props.modelConfig.historyMessageCount}
+              min="0"
+              max="32"
+              step="1"
+              onChange={(e) =>
+                props.updateConfig(
+                  (config) =>
+                    (config.historyMessageCount = e.target.valueAsNumber),
+                )
+              }
+            ></InputRange>
+          </ListItem>
+
+          <ListItem
+            title={Locale.Settings.CompressThreshold.Title}
+            subTitle={Locale.Settings.CompressThreshold.SubTitle}
+          >
+            <input
+              type="number"
+              min={500}
+              max={4000}
+              value={props.modelConfig.compressMessageLengthThreshold}
+              onChange={(e) =>
+                props.updateConfig(
+                  (config) =>
+                    (config.compressMessageLengthThreshold =
+                      e.currentTarget.valueAsNumber),
+                )
+              }
+            ></input>
+          </ListItem>
+          <ListItem title={Locale.Memory.Title} subTitle={Locale.Memory.Send}>
+            <input
+              type="checkbox"
+              checked={props.modelConfig.sendMemory}
+              onChange={(e) =>
+                props.updateConfig(
+                  (config) => (config.sendMemory = e.currentTarget.checked),
+                )
+              }
+            ></input>
+          </ListItem>
+        </>
+      )}
     </>
   );
 }

@@ -44,6 +44,7 @@ interface ChatRsp {
   error?: APIError;
   partContent: string;
   options: ConversationOptions;
+  endTurn: string;
 }
 
 const ConversationPath = "api/v1/chatgpt/conversation";

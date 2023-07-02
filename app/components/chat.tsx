@@ -73,6 +73,9 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 
+import { useModels } from "@/customize/store/model";
+import { canSwitchModel } from "../client/api";
+
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
 });
@@ -288,6 +291,7 @@ function ClearContextDivider() {
 }
 
 function ChatAction(props: {
+  styles?: any;
   text: string;
   icon: JSX.Element;
   onClick: () => void;
@@ -323,6 +327,7 @@ function ChatAction(props: {
         {
           "--icon-width": `${width.icon}px`,
           "--full-width": `${width.full}px`,
+          ...props.styles,
         } as React.CSSProperties
       }
     >
@@ -385,15 +390,25 @@ export function ChatActions(props: {
   const stopAll = () => ChatControllerPool.stopAll();
 
   // switch model
-  const currentModel = chatStore.currentSession().mask.modelConfig.model;
+  const currentModelConfig = chatStore.currentSession().mask.modelConfig;
+  const currentModel = currentModelConfig.displayName;
+  const canSwitch: boolean = canSwitchModel(currentModelConfig.provider);
+
   function nextModel() {
-    const models = ALL_MODELS.filter((m) => m.available).map((m) => m.name);
-    const modelIndex = models.indexOf(currentModel);
+    const { getState } = useModels;
+    const models = getState().models;
+    const modelIndex = currentModelConfig.idx;
     const nextIndex = (modelIndex + 1) % models.length;
     const nextModel = models[nextIndex];
+
     chatStore.updateCurrentSession((session) => {
-      session.mask.modelConfig.model = nextModel;
+      session.mask.modelConfig.model = nextModel.modelName;
       session.mask.syncGlobalConfig = false;
+
+      // customize members
+      session.mask.modelConfig.idx = nextIndex;
+      session.mask.modelConfig.displayName = nextModel.displayName;
+      session.mask.modelConfig.provider = nextModel.provider;
     });
   }
 
@@ -467,6 +482,7 @@ export function ChatActions(props: {
       />
 
       <ChatAction
+        styles={{ "pointer-events": canSwitch ? "auto" : "none" }}
         onClick={nextModel}
         text={currentModel}
         icon={<RobotIcon />}

@@ -16,6 +16,7 @@ import { api, RequestMessage } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
+import { requestChatStream } from "./chatgpt";
 
 export type ChatMessage = RequestMessage & {
   date: string;
@@ -23,6 +24,8 @@ export type ChatMessage = RequestMessage & {
   isError?: boolean;
   id?: number;
   model?: ModelType;
+
+  parentMessageId?: string; // the first message is null
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -53,6 +56,8 @@ export interface ChatSession {
   clearContextIndex?: number;
 
   mask: Mask;
+
+  conversationId?: string; // the first message is null
 }
 
 export const DEFAULT_TOPIC = Locale.Store.DefaultTopic;
@@ -281,6 +286,10 @@ export const useChatStore = create<ChatStore>()(
       async onUserInput(content) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
+
+        if (modelConfig.provider === "chatGPT") {
+          return requestChatStream(content);
+        }
 
         const userContent = fillTemplateWith(content, modelConfig);
         console.log("[User Input] after template: ", userContent);
