@@ -17,6 +17,12 @@ import { ErrorBoundary } from "./error";
 
 import { getLang } from "../locales";
 
+import { useRouter } from "next/navigation";
+import globalConfig from "@/global.config";
+import { Response, PingRsp, sessionKey } from "@/customize/api/user/types";
+import { fetchPing } from "@/customize/api/user/user";
+import { useModels } from "@/customize/store/model";
+
 import {
   HashRouter as Router,
   Routes,
@@ -97,7 +103,7 @@ const useHasHydrated = () => {
 const loadAsyncGoogleFont = () => {
   const linkEl = document.createElement("link");
   const proxyFontUrl = "/google-fonts";
-  const remoteFontUrl = "https://fonts.googleapis.com";
+  const remoteFontUrl = globalConfig.remoteFontUrl;
   const googleFontUrl =
     getClientConfig()?.buildMode === "export" ? remoteFontUrl : proxyFontUrl;
   linkEl.rel = "stylesheet";
@@ -155,9 +161,24 @@ function Screen() {
 export function Home() {
   useSwitchTheme();
 
+  const router = useRouter();
+
   useEffect(() => {
     console.log("[Config] got config from build time", getClientConfig());
-  }, []);
+
+    fetchPing(
+      (response: Response<PingRsp>) => {
+        const data: PingRsp = response.data!;
+
+        useModels.getState().refresh(data.models);
+        sessionStorage.setItem(sessionKey, data.sessionId);
+      },
+      (error: any) => {
+        console.debug("ping error happens: ", error);
+        router.push("/signin");
+      },
+    );
+  }, [router]);
 
   if (!useHasHydrated()) {
     return <Loading />;
