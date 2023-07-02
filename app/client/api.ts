@@ -4,6 +4,7 @@ import { ChatMessage, ModelType, useAccessStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 
 import { sessionKey } from "@/customize/api/user/types";
+import { ChatGPTChatApi } from "./platforms/chatgpt";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -25,11 +26,20 @@ export interface LLMConfig {
   frequency_penalty?: number;
 }
 
+export interface ConversationOptions {
+  messageId: string;
+  conversationId?: string;
+  parentMessageId?: string;
+}
+
 export interface ChatOptions {
   messages: RequestMessage[];
   config: LLMConfig;
 
-  onUpdate?: (message: string, chunk: string) => void;
+  // chatGPT only
+  conversationOptions?: ConversationOptions;
+
+  onUpdate?: (message: string, chunk: any) => void;
   onFinish: (message: string) => void;
   onError?: (err: Error) => void;
   onController?: (controller: AbortController) => void;
@@ -45,7 +55,7 @@ export abstract class LLMApi {
   abstract usage(): Promise<LLMUsage>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm";
+type ProviderName = "openai" | "azure" | "claude" | "palm" | "chatGPT";
 
 interface Model {
   name: string;
@@ -69,7 +79,12 @@ interface ChatProvider {
 export class ClientApi {
   public llm: LLMApi;
 
-  constructor() {
+  constructor(provider?: ProviderName) {
+    if (provider && provider === "chatGPT") {
+      this.llm = new ChatGPTChatApi();
+      return;
+    }
+
     this.llm = new ChatGPTApi();
   }
 
@@ -120,6 +135,7 @@ export class ClientApi {
 }
 
 export const api = new ClientApi();
+export const chatGPTApi = new ClientApi("chatGPT");
 
 export function getHeaders() {
   const accessStore = useAccessStore.getState();
