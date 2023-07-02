@@ -59,7 +59,7 @@ export class ChatGPTApi implements LLMApi {
     options.onController?.(controller);
 
     try {
-      const chatPath = this.path(OpenaiPath.ChatPath);
+      const chatPath = OpenaiPath.ChatPath;
       const chatPayload = {
         method: "POST",
         body: JSON.stringify(requestPayload),

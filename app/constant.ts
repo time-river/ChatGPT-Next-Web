@@ -50,7 +50,7 @@ export const REQUEST_TIMEOUT_MS = 60000;
 export const EXPORT_MESSAGE_CLASS_NAME = "export-markdown";
 
 export const OpenaiPath = {
-  ChatPath: "v1/chat/completions",
+  ChatPath: "api/v1/openai/conversation",
   UsagePath: "dashboard/billing/usage",
   SubsPath: "dashboard/billing/subscription",
 };
