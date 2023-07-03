@@ -505,6 +505,11 @@ export const useChatStore = create<ChatStore>()(
       summarizeSession() {
         const session = get().currentSession();
 
+        // only openai API can use this function
+        if (session.mask.modelConfig.provider !== "openai") {
+          return;
+        }
+
         // remove error messages if any
         const messages = session.messages;
 
