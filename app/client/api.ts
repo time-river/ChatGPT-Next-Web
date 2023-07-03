@@ -46,6 +46,7 @@ export interface ChatOptions {
   onFinish: (message: string) => void;
   onError?: (err: Error) => void;
   onController?: (controller: AbortController) => void;
+  onIgnore: () => void;
 }
 
 export interface LLMUsage {
@@ -58,7 +59,7 @@ export abstract class LLMApi {
   abstract usage(): Promise<LLMUsage>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm" | "chatGPT";
+export type ProviderName = "openai" | "azure" | "claude" | "palm" | "chatGPT";
 
 export function needShowConfig(provider: string): boolean {
   if (provider === "openai") {
@@ -68,13 +69,33 @@ export function needShowConfig(provider: string): boolean {
   }
 }
 
+// every bot message will be tag `ignore == false` if this coversation completes
+export function emptyCurrentSessionMessages(): boolean {
+  const currentSession = useChatStore.getState().currentSession();
+  const messages = currentSession.messages;
+  let result = true;
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+
+    if (message.role === "assistant" && !message.ignore) {
+      result = false;
+      break;
+    }
+  }
+
+  return result;
+}
+
+// rules:
+// 1. any `openai` model can be switched
+// 2. it can be switched if no bot message
 export function canSwitchModel(provider: string): boolean {
   if (provider === "openai") {
     return true;
   }
 
-  const currentSession = useChatStore.getState().currentSession();
-  return currentSession.messages.length == 0;
+  return emptyCurrentSessionMessages();
 }
 
 interface Model {

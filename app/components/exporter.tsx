@@ -240,6 +240,7 @@ export function RenderExport(props: {
         role: role as any,
         content: v.innerHTML,
         date: "",
+        ignore: true,
       };
     });
 

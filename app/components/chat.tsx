@@ -74,7 +74,8 @@ import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 
 import { useModels } from "@/customize/store/model";
-import { canSwitchModel } from "../client/api";
+import { canSwitchModel, emptyCurrentSessionMessages } from "../client/api";
+import { Model } from "@/customize/api/user/types";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -392,14 +393,26 @@ export function ChatActions(props: {
   // switch model
   const currentModelConfig = chatStore.currentSession().mask.modelConfig;
   const currentModel = currentModelConfig.displayName;
-  const canSwitch: boolean = canSwitchModel(currentModelConfig.provider);
+  const canSwitch: boolean =
+    canSwitchModel(currentModelConfig.provider) && !couldStop;
 
   function nextModel() {
     const { getState } = useModels;
     const models = getState().models;
     const modelIndex = currentModelConfig.idx;
-    const nextIndex = (modelIndex + 1) % models.length;
-    const nextModel = models[nextIndex];
+    let nextIndex = (modelIndex + 1) % models.length;
+    let nextModel = models[nextIndex];
+
+    // only allow to switch to the same model
+    while (nextIndex !== modelIndex) {
+      nextModel = models[nextIndex];
+
+      if (nextModel.provider === "openai" || emptyCurrentSessionMessages()) {
+        break;
+      }
+
+      nextIndex = (nextIndex + 1) % models.length;
+    }
 
     chatStore.updateCurrentSession((session) => {
       session.mask.modelConfig.model = nextModel.modelName;

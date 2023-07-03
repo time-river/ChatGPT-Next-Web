@@ -264,6 +264,7 @@ export function ContextPrompts(props: {
                 role: "user",
                 content: "",
                 date: "",
+                ignore: true,
               })
             }
           />

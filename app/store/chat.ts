@@ -26,6 +26,7 @@ export type ChatMessage = RequestMessage & {
   model?: ModelType;
 
   parentMessageId?: string; // the first message is null
+  ignore: boolean; // if the message isn't complete, mark it true
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -35,6 +36,7 @@ export function createMessage(override: Partial<ChatMessage>): ChatMessage {
     role: "user",
     content: "",
     ...override,
+    ignore: true,
   };
 }
 
@@ -377,6 +379,9 @@ export const useChatStore = create<ChatStore>()(
               controller,
             );
           },
+          onIgnore() {
+            botMessage.ignore = false;
+          },
         });
       },
 
@@ -527,6 +532,7 @@ export const useChatStore = create<ChatStore>()(
                     message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
               );
             },
+            onIgnore() {},
           });
         }
 
@@ -569,6 +575,7 @@ export const useChatStore = create<ChatStore>()(
               role: "system",
               content: Locale.Store.Prompt.Summarize,
               date: "",
+              ignore: true,
             }),
             config: { ...modelConfig, stream: true },
             onUpdate(message) {
@@ -581,6 +588,7 @@ export const useChatStore = create<ChatStore>()(
             onError(err) {
               console.error("[Summarize] ", err);
             },
+            onIgnore() {},
           });
         }
       },

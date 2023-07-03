@@ -10,7 +10,10 @@ import { InputRange } from "./input-range";
 import { ListItem, Select } from "./ui-lib";
 import { useModels } from "@/customize/store/model";
 import { useState } from "react";
-import { needShowConfig } from "../client/api";
+import { emptyCurrentSessionMessages, needShowConfig } from "../client/api";
+import { useLocation } from "react-router-dom";
+import { Path } from "../constant";
+import { Model } from "@/customize/api/user/types";
 
 export function ModelConfigList(props: {
   modelConfig: ModelConfig;
@@ -20,6 +23,28 @@ export function ModelConfigList(props: {
   const models = useModels.getState().models;
   const show = needShowConfig(props.modelConfig.provider);
   const [showConfig, setShowConfig] = useState(show);
+  const location = useLocation();
+  const settingsPath = location.pathname === Path.Settings;
+  let validModelsIdx = [props.modelConfig.idx]; // must include the current model
+
+  // only home page need filter model, likes `nextModel()` in `nextModel()`.
+  // it's home page.
+  if (!settingsPath) {
+    for (let i = 0; i < models.length; i++) {
+      const elem = models[i];
+
+      if (
+        props.modelConfig.provider === "openai" &&
+        elem.provider === props.modelConfig.provider
+      ) {
+        validModelsIdx.push(i);
+      } else if (emptyCurrentSessionMessages()) {
+        validModelsIdx.push(i);
+      }
+    }
+  } else {
+    validModelsIdx = Array.from(models.keys());
+  }
 
   return (
     <>
@@ -42,11 +67,14 @@ export function ModelConfigList(props: {
             });
           }}
         >
-          {models.map((v, idx) => (
-            <option value={idx} key={v.id}>
-              {v.displayName}
-            </option>
-          ))}
+          {models.map(
+            (v, idx) =>
+              validModelsIdx.includes(idx) && (
+                <option value={idx} key={v.id}>
+                  {v.displayName}
+                </option>
+              ),
+          )}
         </Select>
       </ListItem>
 

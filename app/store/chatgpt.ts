@@ -127,5 +127,8 @@ export async function requestChatStream(content: string) {
         controller,
       );
     },
+    onIgnore() {
+      botMessage.ignore = false;
+    },
   });
 }
