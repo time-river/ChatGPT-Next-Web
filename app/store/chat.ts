@@ -503,6 +503,8 @@ export const useChatStore = create<ChatStore>()(
       },
 
       summarizeSession() {
+        return;
+
         const session = get().currentSession();
 
         // only openai API can use this function
