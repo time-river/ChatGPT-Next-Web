@@ -41,6 +41,8 @@ const en: LocaleType = {
     ResetSuccess: "Reset password Success",
     ServerError: "Server error",
     InputChallenge: "Input verification code please",
+    SignOut: "Sign Out",
+    Dashboard: "Client Area",
   },
   Auth: {
     Title: "Need Access Code",

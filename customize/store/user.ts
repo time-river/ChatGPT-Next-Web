@@ -40,6 +40,7 @@ export const useUser = createStore<UserStore>()(
         set(() => ({user: {username, email}, token, isValid: true}));
       },
       signOut() {
+        sessionStorage.clear();
         localStorage.clear();
         window.location.href = "/signin";
       },

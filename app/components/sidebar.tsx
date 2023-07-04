@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import styles from "./home.module.scss";
 
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
-import GithubIcon from "../icons/github.svg";
+import UserIcon from "../icons/user.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
@@ -27,6 +27,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "./ui-lib";
+import { useUser } from "@/customize/store/user";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -106,6 +107,11 @@ export function SideBar(props: { className?: string }) {
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
   const navigate = useNavigate();
   const config = useAppConfig();
+  const [visible, setVisible] = useState(false);
+
+  function SignOut() {
+    useUser.getState().signOut();
+  }
 
   useHotKey();
 
@@ -167,15 +173,43 @@ export function SideBar(props: { className?: string }) {
               }}
             />
           </div>
+          <div
+            className={
+              styles["sidebar-action"] + " " + styles["drop-container"]
+            }
+            onClick={() => {
+              setVisible(!visible);
+            }}
+            onMouseEnter={() => {
+              setVisible(true);
+            }}
+            onMouseLeave={() => {
+              setVisible(false);
+            }}
+          >
+            <IconButton icon={<UserIcon />} shadow />
+            <div
+              className={styles["drop-nav"]}
+              style={{ visibility: visible ? "visible" : "hidden" }}
+            >
+              <nav>
+                <a
+                  className={styles["drop-content"]}
+                  href={Path.Dashboard}
+                  target="_blank"
+                >
+                  {Locale.User.Dashboard}
+                </a>
+                <a className={styles["drop-content"]} onClick={SignOut}>
+                  {Locale.User.SignOut}
+                </a>
+              </nav>
+            </div>
+          </div>
           <div className={styles["sidebar-action"]}>
             <Link to={Path.Settings}>
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
-          </div>
-          <div className={styles["sidebar-action"]}>
-            <a href={REPO_URL} target="_blank">
-              <IconButton icon={<GithubIcon />} shadow />
-            </a>
           </div>
         </div>
         <div>

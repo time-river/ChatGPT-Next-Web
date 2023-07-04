@@ -325,3 +325,49 @@
 .rtl-screen {
   direction: rtl;
 }
+
+.drop-container {
+  position: relative;
+}
+
+.drop-nav {
+  position: absolute;
+  border: none;
+  bottom: 100%;
+  overflow: hidden;
+  padding-bottom: .375rem;
+  padding-top: .375rem;
+  border-radius: .375rem;
+
+  font-size: 14px;
+  line-height: .75rem;
+  transition: visibility 0s, opacity 0.5s linear;
+
+  outline-offset: 2px;
+  outline: 2px solid transparent;
+
+  background-color: var(--hover-color);
+
+  opacity: 1;
+}
+
+.drop-content {
+  display: flex;
+
+  padding: .75rem;
+  gap: .75rem;
+  align-items: center;
+  opacity: 1;
+  transition: visibility 0s, opacity 0.5s linear;
+
+  white-space: nowrap;
+  cursor: pointer;
+  // disable default href link style
+  text-decoration: none;
+  color: inherit;
+
+  &:hover,
+  &:active {
+    background-color: var(--white);
+  }
+}

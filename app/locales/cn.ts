@@ -36,6 +36,8 @@ const cn = {
     ResetSuccess: "重置密码成功",
     ServerError: "服务端异常",
     InputChallenge: "请输入验证码",
+    SignOut: "退出",
+    Dashboard: "用户中心",
   },
   Error: {
     Unauthorized:
