@@ -590,6 +590,7 @@ export function Chat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [canSend, setCanSend] = useState(true);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const { scrollRef, setAutoScroll, scrollToBottom } = useScrollToBottom();
   const [hitBottom, setHitBottom] = useState(true);
@@ -668,7 +669,7 @@ export function Chat() {
   };
 
   const doSubmit = (userInput: string) => {
-    if (userInput.trim() === "") return;
+    if (userInput.trim() === "" || !canSend) return;
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -677,7 +678,13 @@ export function Chat() {
       return;
     }
     setIsLoading(true);
-    chatStore.onUserInput(userInput).then(() => setIsLoading(false));
+    setCanSend(false);
+    chatStore
+      .onUserInput(userInput)
+      .then(() => setIsLoading(false))
+      .finally(() => {
+        setCanSend(true);
+      });
     localStorage.setItem(LAST_INPUT_KEY, userInput);
     setUserInput("");
     setPromptHints([]);
@@ -798,6 +805,7 @@ export function Chat() {
     if (userIndex === null) return;
 
     setIsLoading(true);
+    setCanSend(false);
     const content = session.messages[userIndex].content;
     let options = undefined;
     if (session.mask.modelConfig.provider === "chatGPT") {
@@ -810,7 +818,12 @@ export function Chat() {
       };
     }
     deleteMessage(userIndex);
-    chatStore.onUserInput(content, options).then(() => setIsLoading(false));
+    chatStore
+      .onUserInput(content, options)
+      .then(() => setIsLoading(false))
+      .finally(() => {
+        setCanSend(true);
+      });
     inputRef.current?.focus();
   };
 
@@ -1147,6 +1160,7 @@ export function Chat() {
             text={Locale.Chat.Send}
             className={styles["chat-input-send"]}
             type="primary"
+            disabled={!canSend}
             onClick={() => doSubmit(userInput)}
           />
         </div>

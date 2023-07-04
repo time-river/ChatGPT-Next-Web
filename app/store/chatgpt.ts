@@ -85,7 +85,7 @@ export async function requestChatStream(
   };
 
   // make request
-  chatGPTApi.llm.chat({
+  await chatGPTApi.llm.chat({
     messages: [reqMsg],
     config: { ...config, stream: true },
     conversationOptions: conversationOptions,

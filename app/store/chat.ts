@@ -290,7 +290,7 @@ export const useChatStore = create<ChatStore>()(
         const modelConfig = session.mask.modelConfig;
 
         if (modelConfig.provider === "chatGPT") {
-          return requestChatStream(content, options);
+          return await requestChatStream(content, options);
         }
 
         const userContent = fillTemplateWith(content, modelConfig);
@@ -327,7 +327,7 @@ export const useChatStore = create<ChatStore>()(
         });
 
         // make request
-        api.llm.chat({
+        await api.llm.chat({
           messages: sendMessages,
           config: { ...modelConfig, stream: true },
           onUpdate(message) {
