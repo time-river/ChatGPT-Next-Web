@@ -799,8 +799,18 @@ export function Chat() {
 
     setIsLoading(true);
     const content = session.messages[userIndex].content;
+    let options = undefined;
+    if (session.mask.modelConfig.provider === "chatGPT") {
+      const message = session.messages[userIndex];
+      console.log(message);
+      options = {
+        messageId: message.messageId,
+        conversationId: session.conversationId,
+        parentMessageId: message.parentMessageId,
+      };
+    }
     deleteMessage(userIndex);
-    chatStore.onUserInput(content).then(() => setIsLoading(false));
+    chatStore.onUserInput(content, options).then(() => setIsLoading(false));
     inputRef.current?.focus();
   };
 

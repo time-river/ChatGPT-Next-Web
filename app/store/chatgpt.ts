@@ -15,17 +15,23 @@ import {
   RequestMessage,
 } from "../client/api";
 
-function getChatgptOptions(): ConversationOptions {
+function getChatgptOptions(options: ConversationOptions): ConversationOptions {
   const chatStore = useChatStore.getState();
+  const messageId = uuidv4();
+
+  if (!!options) {
+    // override messageId to make sure the messageId always new
+    options.messageId = messageId;
+    return options;
+  }
 
   const session = chatStore.currentSession();
   const messages: ChatMessage[] = session.messages;
   const n = messages.length;
-  const messageId = uuidv4();
 
   for (let i = n - 1; i >= 0; i -= 1) {
-    // filter error msg and user msg
-    if (messages[i].isError || messages[i].role !== "assistant") {
+    // filter ignore msg and user msg
+    if (messages[i].ignore || messages[i].role !== "assistant") {
       continue;
     }
 
@@ -41,10 +47,13 @@ function getChatgptOptions(): ConversationOptions {
   return { messageId: uuidv4() };
 }
 
-export async function requestChatStream(content: string) {
+export async function requestChatStream(
+  content: string,
+  options: ConversationOptions,
+) {
   const chatStore = useChatStore.getState();
 
-  const conversationOptions = getChatgptOptions();
+  const conversationOptions = getChatgptOptions(options);
   const reqMsg: RequestMessage = {
     role: "user",
     content: content,
@@ -79,6 +88,7 @@ export async function requestChatStream(content: string) {
   chatGPTApi.llm.chat({
     messages: [reqMsg],
     config: { ...config, stream: true },
+    conversationOptions: conversationOptions,
     onUpdate(message, chunk: any) {
       const options = chunk as ConversationOptions;
 

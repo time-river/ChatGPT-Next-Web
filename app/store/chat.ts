@@ -98,7 +98,7 @@ interface ChatStore {
   currentSession: () => ChatSession;
   nextSession: (delta: number) => void;
   onNewMessage: (message: ChatMessage) => void;
-  onUserInput: (content: string) => Promise<void>;
+  onUserInput: (content: string, options?: any) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: ChatMessage) => void;
   updateCurrentSession: (updater: (session: ChatSession) => void) => void;
@@ -285,12 +285,12 @@ export const useChatStore = create<ChatStore>()(
         get().summarizeSession();
       },
 
-      async onUserInput(content) {
+      async onUserInput(content, options) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
         if (modelConfig.provider === "chatGPT") {
-          return requestChatStream(content);
+          return requestChatStream(content, options);
         }
 
         const userContent = fillTemplateWith(content, modelConfig);
