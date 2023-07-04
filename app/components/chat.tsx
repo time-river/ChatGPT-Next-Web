@@ -291,6 +291,62 @@ function ClearContextDivider() {
   );
 }
 
+function RobotChatAction(props: {
+  styles?: any;
+  text: string;
+  icon: JSX.Element;
+  onClick: () => void;
+}) {
+  const getWidth = (dom: HTMLDivElement) => dom.getBoundingClientRect().width;
+  const iconRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState({
+    full: 16,
+    icon: 16,
+  });
+
+  function updateWidth() {
+    if (!iconRef.current || !textRef.current) return;
+
+    const textWidth = getWidth(textRef.current);
+    const iconWidth = getWidth(iconRef.current);
+    setWidth({
+      full: textWidth + iconWidth,
+      icon: iconWidth,
+    });
+  }
+
+  useEffect(() => {
+    updateWidth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div
+      className={`${styles["chat-input-action"]} clickable`}
+      onClick={() => {
+        props.onClick();
+        setTimeout(updateWidth, 1);
+      }}
+      style={
+        {
+          "--icon-width": `${width.icon}px`,
+          "--full-width": `${width.full}px`,
+          width: `${width.full}px`,
+          ...props.styles,
+        } as React.CSSProperties
+      }
+    >
+      <div ref={iconRef} className={styles["icon"]}>
+        {props.icon}
+      </div>
+      <div className={styles["text"]} ref={textRef} style={{ opacity: 1 }}>
+        {props.text}
+      </div>
+    </div>
+  );
+}
+
 function ChatAction(props: {
   styles?: any;
   text: string;
@@ -375,6 +431,7 @@ export function ChatActions(props: {
   const config = useAppConfig();
   const navigate = useNavigate();
   const chatStore = useChatStore();
+  const isMobileScreen = useMobileScreen();
 
   // switch themes
   const theme = config.theme;
@@ -479,27 +536,40 @@ export function ChatActions(props: {
         icon={<MaskIcon />}
       />
 
-      <ChatAction
-        text={Locale.Chat.InputActions.Clear}
-        icon={<BreakIcon />}
-        onClick={() => {
-          chatStore.updateCurrentSession((session) => {
-            if (session.clearContextIndex === session.messages.length) {
-              session.clearContextIndex = undefined;
-            } else {
-              session.clearContextIndex = session.messages.length;
-              session.memoryPrompt = ""; // will clear memory
-            }
-          });
-        }}
-      />
+      {chatStore.currentSession().mask.modelConfig.provider === "openai" && (
+        <>
+          <ChatAction
+            text={Locale.Chat.InputActions.Clear}
+            icon={<BreakIcon />}
+            onClick={() => {
+              chatStore.updateCurrentSession((session) => {
+                if (session.clearContextIndex === session.messages.length) {
+                  session.clearContextIndex = undefined;
+                } else {
+                  session.clearContextIndex = session.messages.length;
+                  session.memoryPrompt = ""; // will clear memory
+                }
+              });
+            }}
+          />
+        </>
+      )}
 
-      <ChatAction
-        styles={{ "pointer-events": canSwitch ? "auto" : "none" }}
-        onClick={nextModel}
-        text={currentModel}
-        icon={<RobotIcon />}
-      />
+      {isMobileScreen ? (
+        <ChatAction
+          styles={{ "pointer-events": canSwitch ? "auto" : "none" }}
+          onClick={nextModel}
+          text={currentModel}
+          icon={<RobotIcon />}
+        />
+      ) : (
+        <RobotChatAction
+          styles={{ "pointer-events": canSwitch ? "auto" : "none" }}
+          onClick={nextModel}
+          text={currentModel}
+          icon={<RobotIcon />}
+        />
+      )}
     </div>
   );
 }
